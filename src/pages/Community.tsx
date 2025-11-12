@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PostCard } from '@/components/PostCard';
 import { useToast } from '@/hooks/use-toast';
-import { User, LogOut, Search, TrendingUp } from 'lucide-react';
+import { User, LogOut, Search, TrendingUp, ArrowLeft } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationBell } from '@/components/NotificationBell';
 import { MobileSidebar } from '@/components/MobileSidebar';
@@ -134,11 +134,16 @@ export default function Community() {
       {/* Header */}
       <header className="bg-card border-b shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="hidden md:flex items-center gap-3 cursor-pointer hover:opacity-80 transition-smooth" onClick={() => navigate('/')}>
-            <img src={brototypeLogo} alt="Brototype" className="h-10" />
-            <div>
-              <h1 className="text-2xl font-bold">Brototype Connect</h1>
-              <p className="text-sm text-muted-foreground">Community</p>
+          <div className="hidden md:flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} className="hover:bg-accent">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-smooth" onClick={() => navigate('/')}>
+              <img src={brototypeLogo} alt="Brototype" className="h-10" />
+              <div>
+                <h1 className="text-2xl font-bold">Brototype Connect</h1>
+                <p className="text-sm text-muted-foreground">Community</p>
+              </div>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-2">
@@ -154,8 +159,13 @@ export default function Community() {
           </div>
 
           <div className="flex md:hidden items-center justify-between w-full">
-            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80" onClick={() => navigate('/')}>
-              <img src={brototypeLogo} alt="Brototype" className="h-9" />
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} className="hover:bg-accent">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-3 cursor-pointer hover:opacity-80" onClick={() => navigate('/')}>
+                <img src={brototypeLogo} alt="Brototype" className="h-9" />
+              </div>
             </div>
             <MobileSidebar />
           </div>
