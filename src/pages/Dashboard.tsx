@@ -75,7 +75,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<Stats>({ total: 0, active: 0, resolved: 0 });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | 'active' | 'resolved'>('all');
+  const [filter, setFilter] = useState<'all' | 'active' | 'resolved' | 'mine'>('all');
   const [userUpvotes, setUserUpvotes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -193,7 +193,9 @@ export default function Dashboard() {
     const matchesSearch = complaint.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          complaint.complaint_number.toLowerCase().includes(searchQuery.toLowerCase());
     
-    if (filter === 'active') {
+    if (filter === 'mine') {
+      return matchesSearch && complaint.user_id === user?.id;
+    } else if (filter === 'active') {
       return matchesSearch && ['submitted', 'in_review', 'in_progress'].includes(complaint.status);
     } else if (filter === 'resolved') {
       return matchesSearch && ['resolved', 'closed'].includes(complaint.status);
@@ -306,12 +308,18 @@ export default function Dashboard() {
               className="pl-10"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant={filter === 'all' ? 'default' : 'outline'}
               onClick={() => setFilter('all')}
             >
               All
+            </Button>
+            <Button
+              variant={filter === 'mine' ? 'default' : 'outline'}
+              onClick={() => setFilter('mine')}
+            >
+              My Complaints
             </Button>
             <Button
               variant={filter === 'active' ? 'default' : 'outline'}
