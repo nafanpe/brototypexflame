@@ -127,7 +127,7 @@ export default function ComplaintDetail() {
     try {
       const updateData: any = { status: newStatus };
       
-      if (newStatus === 'resolved' || newStatus === 'closed') {
+      if (newStatus === 'resolved') {
         updateData.resolved_at = new Date().toISOString();
         if (resolutionNotes.trim()) {
           updateData.resolution_notes = resolutionNotes;
@@ -290,14 +290,12 @@ export default function ComplaintDetail() {
                   <SelectContent>
                     <SelectItem value="submitted">Submitted</SelectItem>
                     <SelectItem value="in_review">In Review</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="resolved">Resolved</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {(selectedStatus === 'resolved' || selectedStatus === 'closed') && (
+              {selectedStatus === 'resolved' && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Resolution Notes</label>
                   <Textarea
