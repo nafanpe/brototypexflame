@@ -221,8 +221,8 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-card border-b shadow-sm sticky top-0 z-10 animate-fade-in">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={brototypeLogo} alt="Brototype" className="h-10 hover-highlight transition-smooth" />
+          <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-smooth" onClick={() => navigate('/')}>
+            <img src={brototypeLogo} alt="Brototype" className="h-10" />
             <div>
               <h1 className="text-2xl font-bold">Brototype Connect</h1>
               <p className="text-sm text-muted-foreground">Complaint Management System</p>
