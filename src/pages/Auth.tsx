@@ -9,6 +9,22 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import brototypeLogo from '@/assets/brototype-logo.png';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address').toLowerCase(),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+const signupSchema = z.object({
+  email: z.string().email('Invalid email address').toLowerCase(),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number'),
+  fullName: z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name too long'),
+});
 
 export default function Auth() {
   const { signIn, signUp } = useAuth();
@@ -26,39 +42,80 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signIn(loginEmail, loginPassword);
-
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: error.message,
+    try {
+      const validationResult = loginSchema.safeParse({
+        email: loginEmail,
+        password: loginPassword,
       });
-    }
 
-    setLoading(false);
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(e => e.message).join(', ');
+        toast({
+          variant: 'destructive',
+          title: 'Validation Error',
+          description: errors,
+        });
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await signIn(validationResult.data.email, validationResult.data.password);
+
+      if (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Login Failed',
+          description: error.message,
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signUp(signupEmail, signupPassword, fullName);
+    try {
+      const validationResult = signupSchema.safeParse({
+        email: signupEmail,
+        password: signupPassword,
+        fullName: fullName,
+      });
 
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Signup Failed',
-        description: error.message,
-      });
-    } else {
-      toast({
-        title: 'Account Created',
-        description: 'Your account has been created successfully.',
-      });
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(e => e.message).join(', ');
+        toast({
+          variant: 'destructive',
+          title: 'Validation Error',
+          description: errors,
+        });
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await signUp(
+        validationResult.data.email, 
+        validationResult.data.password, 
+        validationResult.data.fullName
+      );
+
+      if (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Signup Failed',
+          description: error.message,
+        });
+      } else {
+        toast({
+          title: 'Account Created',
+          description: 'Your account has been created successfully.',
+        });
+      }
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

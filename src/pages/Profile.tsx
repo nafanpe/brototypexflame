@@ -11,6 +11,12 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserBadge } from '@/components/UserBadge';
+import { z } from 'zod';
+
+const profileSchema = z.object({
+  full_name: z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name must be less than 100 characters'),
+  batch_department: z.string().trim().max(100, 'Department must be less than 100 characters').optional(),
+});
 
 export default function Profile() {
   const { user } = useAuth();
@@ -78,11 +84,27 @@ export default function Profile() {
 
     setSaving(true);
     try {
+      // Validate input
+      const validationResult = profileSchema.safeParse({
+        full_name: fullName,
+        batch_department: batchDepartment || undefined,
+      });
+
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map(e => e.message).join(', ');
+        toast({
+          variant: 'destructive',
+          title: 'Validation Error',
+          description: errors,
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('profiles')
         .update({
-          full_name: fullName,
-          batch_department: batchDepartment,
+          full_name: validationResult.data.full_name,
+          batch_department: validationResult.data.batch_department || null,
         })
         .eq('id', user.id);
 
@@ -97,7 +119,7 @@ export default function Profile() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.message,
+        description: 'Failed to update profile',
       });
     } finally {
       setSaving(false);

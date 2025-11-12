@@ -69,12 +69,10 @@ export default function ComplaintDetail() {
         .maybeSingle();
 
       if (complaintError) {
-        console.error('Error fetching complaint:', complaintError);
         throw complaintError;
       }
       
       if (!complaintData) {
-        console.error('No complaint found with id:', id);
         setLoading(false);
         return;
       }
@@ -88,7 +86,7 @@ export default function ComplaintDetail() {
         .order('created_at', { ascending: true });
 
       if (commentsError) {
-        console.error('Error fetching comments:', commentsError);
+        // Error handled silently, non-critical data
       }
 
       setComments(commentsData || []);
@@ -102,11 +100,10 @@ export default function ComplaintDetail() {
 
       setImages(imagesData || []);
     } catch (error: any) {
-      console.error('Fetch error:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.message || 'Failed to load complaint details',
+        description: 'Failed to load complaint details',
       });
     } finally {
       setLoading(false);
@@ -398,7 +395,6 @@ export default function ComplaintDetail() {
                       alt="Complaint evidence"
                       className="w-full h-full object-cover transition-smooth group-hover:opacity-90"
                       onError={(e) => {
-                        console.error('Image failed to load:', image.image_url);
                         e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage%3C/text%3E%3C/svg%3E';
                       }}
                     />
