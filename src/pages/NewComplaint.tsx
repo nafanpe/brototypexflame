@@ -78,24 +78,22 @@ export default function NewComplaint() {
     setLoading(true);
 
     try {
-      const complaintData = {
-        user_id: user.id,
-        title,
-        description,
-        category: category as any,
-        urgency: urgency as any,
-        location: location || null,
-        is_anonymous: isAnonymous,
-        complaint_number: '',
-      };
+      // Use edge function for server-side validation and rate limiting
+      const { data, error: functionError } = await supabase.functions.invoke('submit-complaint?action=create', {
+        body: {
+          title,
+          description,
+          category,
+          urgency,
+          location: location || null,
+          is_anonymous: isAnonymous,
+        },
+      });
 
-      const { data: complaint, error: complaintError } = await supabase
-        .from('complaints')
-        .insert(complaintData)
-        .select()
-        .single();
+      if (functionError) throw new Error(functionError.message);
+      if (data?.error) throw new Error(data.error);
 
-      if (complaintError) throw complaintError;
+      const complaint = data.complaint;
 
       // Upload images if any
       if (images.length > 0 && complaint) {

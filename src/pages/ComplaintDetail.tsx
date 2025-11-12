@@ -95,14 +95,17 @@ export default function ComplaintDetail() {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase.from('complaint_comments').insert({
-        complaint_id: id,
-        user_id: user.id,
-        comment: newComment,
-        is_internal: false,
+      // Use edge function for server-side validation and rate limiting
+      const { data, error: functionError } = await supabase.functions.invoke('submit-complaint?action=comment', {
+        body: {
+          complaint_id: id,
+          comment: newComment,
+          is_internal: false,
+        },
       });
 
-      if (error) throw error;
+      if (functionError) throw new Error(functionError.message);
+      if (data?.error) throw new Error(data.error);
 
       setNewComment('');
       fetchComplaintDetails();
@@ -125,21 +128,17 @@ export default function ComplaintDetail() {
     if (!isAdmin || !user) return;
 
     try {
-      const updateData: any = { status: newStatus };
-      
-      if (newStatus === 'resolved') {
-        updateData.resolved_at = new Date().toISOString();
-        if (resolutionNotes.trim()) {
-          updateData.resolution_notes = resolutionNotes;
-        }
-      }
+      // Use edge function for server-side validation and authorization
+      const { data, error: functionError } = await supabase.functions.invoke('submit-complaint?action=update-status', {
+        body: {
+          complaint_id: id,
+          status: newStatus,
+          resolution_notes: resolutionNotes.trim() || null,
+        },
+      });
 
-      const { error } = await supabase
-        .from('complaints')
-        .update(updateData)
-        .eq('id', id);
-
-      if (error) throw error;
+      if (functionError) throw new Error(functionError.message);
+      if (data?.error) throw new Error(data.error);
 
       toast({
         title: 'Status Updated',
