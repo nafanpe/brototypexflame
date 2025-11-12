@@ -37,14 +37,14 @@ const Landing = () => {
 
   const { scrollYProgress: horizontalScrollProgress } = useScroll({
     target: horizontalRef,
-    offset: ["start end", "end start"]
+    offset: ["start start", "end end"]
   });
 
   const heroRotateX = useTransform(heroScrollProgress, [0, 1], [0, 15]);
   const heroScale = useTransform(heroScrollProgress, [0, 1], [1, 0.9]);
   const heroOpacity = useTransform(heroScrollProgress, [0, 0.5, 1], [1, 0.8, 0.3]);
 
-  const horizontalX = useTransform(horizontalScrollProgress, [0, 1], ["0%", "-66.666%"]);
+  const horizontalX = useTransform(horizontalScrollProgress, [0, 1], ["0%", "-200%"]);
 
   const handleGetStarted = () => {
     navigate(user ? '/dashboard' : '/auth');
