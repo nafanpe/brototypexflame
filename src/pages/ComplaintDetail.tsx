@@ -38,11 +38,12 @@ export default function ComplaintDetail() {
   const checkAdminStatus = async () => {
     if (!user) return;
     const { data } = await supabase
-      .from('profiles')
+      .from('user_roles')
       .select('role')
-      .eq('id', user.id)
-      .single();
-    setIsAdmin(data?.role === 'admin');
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    setIsAdmin(!!data);
   };
 
   const fetchComplaintDetails = async () => {
