@@ -88,23 +88,29 @@ export type Database = {
       }
       community_posts: {
         Row: {
+          comment_count: number
           created_at: string
           id: string
           image_url: string | null
+          like_count: number
           text_content: string
           user_id: string
         }
         Insert: {
+          comment_count?: number
           created_at?: string
           id?: string
           image_url?: string | null
+          like_count?: number
           text_content: string
           user_id: string
         }
         Update: {
+          comment_count?: number
           created_at?: string
           id?: string
           image_url?: string | null
+          like_count?: number
           text_content?: string
           user_id?: string
         }

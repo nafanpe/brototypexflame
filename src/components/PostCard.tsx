@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Sheet,
@@ -11,11 +9,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Heart, MessageCircle, Trash2, Shield } from 'lucide-react';
+import { Heart, MessageCircle, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { UserBadge } from '@/components/UserBadge';
 
 interface PostCardProps {
   post: {
@@ -24,6 +23,8 @@ interface PostCardProps {
     user_id: string;
     text_content: string;
     image_url: string | null;
+    like_count: number;
+    comment_count: number;
     profiles: {
       full_name: string;
       avatar_url: string | null;
@@ -47,22 +48,23 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-  const [commentCount, setCommentCount] = useState(0);
+  const [localLikeCount, setLocalLikeCount] = useState(post.like_count);
+  const [localCommentCount, setLocalCommentCount] = useState(post.comment_count);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isCommenting, setIsCommenting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     checkLikeStatus();
-    fetchLikeCount();
-    fetchCommentCount();
     checkAdminStatus();
-    fetchUserRole();
   }, [post.id, user]);
+
+  useEffect(() => {
+    setLocalLikeCount(post.like_count);
+    setLocalCommentCount(post.comment_count);
+  }, [post.like_count, post.comment_count]);
 
   const checkLikeStatus = async () => {
     if (!user) return;
@@ -77,22 +79,17 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     setIsLiked(!!data);
   };
 
-  const fetchLikeCount = async () => {
-    const { count } = await supabase
-      .from('community_likes')
-      .select('*', { count: 'exact', head: true })
-      .eq('post_id', post.id);
+  const checkAdminStatus = async () => {
+    if (!user) return;
     
-    setLikeCount(count || 0);
-  };
-
-  const fetchCommentCount = async () => {
-    const { count } = await supabase
-      .from('community_comments')
-      .select('*', { count: 'exact', head: true })
-      .eq('post_id', post.id);
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
     
-    setCommentCount(count || 0);
+    setIsAdmin(!!data);
   };
 
   const fetchComments = async () => {
@@ -111,31 +108,12 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     setComments(data || []);
   };
 
-  const checkAdminStatus = async () => {
-    if (!user) return;
-    
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .eq('role', 'admin')
-      .maybeSingle();
-    
-    setIsAdmin(!!data);
-  };
-
-  const fetchUserRole = async () => {
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', post.user_id)
-      .maybeSingle();
-    
-    setUserRole(data?.role || null);
-  };
-
   const handleLike = async () => {
     if (!user) return;
+
+    // Optimistic UI update
+    setIsLiked(!isLiked);
+    setLocalLikeCount(prev => isLiked ? prev - 1 : prev + 1);
 
     if (isLiked) {
       await supabase
@@ -143,9 +121,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
         .delete()
         .eq('post_id', post.id)
         .eq('user_id', user.id);
-      
-      setIsLiked(false);
-      setLikeCount(prev => prev - 1);
     } else {
       await supabase
         .from('community_likes')
@@ -153,9 +128,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
           post_id: post.id,
           user_id: user.id
         });
-      
-      setIsLiked(true);
-      setLikeCount(prev => prev + 1);
     }
   };
 
@@ -184,7 +156,6 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
     setNewComment('');
     fetchComments();
-    fetchCommentCount();
     toast({
       title: 'Success',
       description: 'Comment posted!'
@@ -223,120 +194,156 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={post.profiles.avatar_url || ''} />
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {post.profiles.full_name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+    <div className="border-b border-gray-800 p-4 hover:bg-gray-900/50 transition-colors">
+      <div className="flex gap-3">
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={post.profiles.avatar_url || ''} />
+          <AvatarFallback className="bg-primary text-primary-foreground">
+            {post.profiles.full_name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+        
+        <div className="flex-1 space-y-2">
+          <div className="flex items-start justify-between">
             <div>
-              <div className="flex items-center gap-2">
-                <p className="font-semibold">{post.profiles.full_name}</p>
-                {(userRole === 'admin' || userRole === 'staff') && (
-                  <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                    <Shield className="h-3 w-3" />
-                    {userRole === 'admin' ? 'Admin' : 'Staff'}
-                  </Badge>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground">
+              <UserBadge 
+                userId={post.user_id} 
+                userName={post.profiles.full_name}
+                className="text-white"
+              />
+              <p className="text-xs text-gray-500">
                 {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
               </p>
             </div>
-          </div>
-          {(isAdmin || post.user_id === user?.id) && (
-            <Button variant="ghost" size="icon" onClick={handleDelete}>
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm whitespace-pre-wrap">{post.text_content}</p>
-
-        <div className="flex items-center gap-4 pt-2 border-t">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLike}
-            className={isLiked ? 'text-red-500' : ''}
-          >
-            <Heart className={`h-4 w-4 mr-1 ${isLiked ? 'fill-current' : ''}`} />
-            {likeCount}
-          </Button>
-
-          <Sheet open={sheetOpen} onOpenChange={handleSheetOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <MessageCircle className="h-4 w-4 mr-1" />
-                {commentCount}
+            {(isAdmin || post.user_id === user?.id) && (
+              <Button variant="ghost" size="icon" onClick={handleDelete} className="hover:bg-gray-800 text-gray-400 hover:text-red-500">
+                <Trash2 className="h-4 w-4" />
               </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle>Comments</SheetTitle>
-              </SheetHeader>
+            )}
+          </div>
 
-              <div className="mt-6 space-y-4">
-                {/* Add Comment */}
-                <div className="space-y-2">
-                  <Textarea
-                    placeholder="Write a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    maxLength={200}
-                    className="min-h-[80px]"
-                  />
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      {newComment.length}/200
-                    </span>
-                    <Button
-                      onClick={handleComment}
-                      disabled={!newComment.trim() || isCommenting}
-                      size="sm"
-                    >
-                      {isCommenting ? 'Posting...' : 'Comment'}
-                    </Button>
+          {post.text_content && (
+            <p className="text-sm text-white whitespace-pre-wrap">{post.text_content}</p>
+          )}
+
+          {post.image_url && (
+            <img 
+              src={post.image_url} 
+              alt="Post image" 
+              className="rounded-lg max-h-96 w-full object-cover mt-2"
+            />
+          )}
+
+          <div className="flex items-center gap-6 pt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLike}
+              className={`hover:bg-gray-800 ${isLiked ? 'text-red-500' : 'text-gray-400'}`}
+            >
+              <Heart className={`h-5 w-5 mr-1 ${isLiked ? 'fill-current' : ''}`} />
+              <span className="text-sm">{localLikeCount}</span>
+            </Button>
+
+            <Sheet open={sheetOpen} onOpenChange={handleSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="sm" className="hover:bg-gray-800 text-gray-400">
+                  <MessageCircle className="h-5 w-5 mr-1" />
+                  <span className="text-sm">{localCommentCount}</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto bg-black border-gray-800">
+                <SheetHeader>
+                  <SheetTitle className="text-white">Comments</SheetTitle>
+                </SheetHeader>
+
+                {/* Original Post in Sheet */}
+                <div className="mt-6 pb-4 border-b border-gray-800">
+                  <div className="flex gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={post.profiles.avatar_url || ''} />
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {post.profiles.full_name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <UserBadge 
+                        userId={post.user_id} 
+                        userName={post.profiles.full_name}
+                        className="text-white"
+                      />
+                      {post.text_content && (
+                        <p className="text-sm text-white mt-2">{post.text_content}</p>
+                      )}
+                      {post.image_url && (
+                        <img 
+                          src={post.image_url} 
+                          alt="Post image" 
+                          className="rounded-lg max-h-64 w-full object-cover mt-2"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Comments List */}
-                <div className="space-y-4 pt-4 border-t">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="flex gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={comment.profiles.avatar_url || ''} />
-                        <AvatarFallback className="bg-muted">
-                          {comment.profiles.full_name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="bg-muted rounded-lg p-3">
-                          <p className="font-semibold text-sm">{comment.profiles.full_name}</p>
-                          <p className="text-sm mt-1">{comment.text_content}</p>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1 ml-3">
-                          {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                        </p>
-                      </div>
+                <div className="mt-6 space-y-4">
+                  {/* Add Comment */}
+                  <div className="space-y-2">
+                    <Textarea
+                      placeholder="Write a comment..."
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      maxLength={200}
+                      className="min-h-[80px] bg-black border-gray-800 text-white placeholder:text-gray-500"
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">
+                        {newComment.length}/200
+                      </span>
+                      <Button
+                        onClick={handleComment}
+                        disabled={!newComment.trim() || isCommenting}
+                        size="sm"
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        {isCommenting ? 'Posting...' : 'Comment'}
+                      </Button>
                     </div>
-                  ))}
-                  {comments.length === 0 && (
-                    <p className="text-center text-muted-foreground text-sm py-8">
-                      No comments yet. Be the first to comment!
-                    </p>
-                  )}
+                  </div>
+
+                  {/* Comments List */}
+                  <div className="space-y-4 pt-4">
+                    {comments.map((comment) => (
+                      <div key={comment.id} className="flex gap-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={comment.profiles.avatar_url || ''} />
+                          <AvatarFallback className="bg-gray-800 text-white">
+                            {comment.profiles.full_name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="bg-gray-900 rounded-lg p-3">
+                            <p className="font-semibold text-sm text-white">{comment.profiles.full_name}</p>
+                            <p className="text-sm text-white mt-1">{comment.text_content}</p>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1 ml-3">
+                            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {comments.length === 0 && (
+                      <p className="text-center text-gray-500 text-sm py-8">
+                        No comments yet. Be the first to comment!
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </SheetContent>
-          </Sheet>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
