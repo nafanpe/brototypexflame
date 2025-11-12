@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationBell } from '@/components/NotificationBell';
 import { 
@@ -21,7 +22,6 @@ import {
   Lock,
   ArrowUp,
   Hash,
-  User,
   Users
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -77,6 +77,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'resolved' | 'mine'>('all');
   const [userUpvotes, setUserUpvotes] = useState<Set<string>>(new Set());
+  const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -84,10 +85,23 @@ export default function Dashboard() {
       return;
     }
     
+    fetchUserProfile();
     fetchComplaints();
     fetchUserUpvotes();
     setupRealtimeSubscription();
   }, [user, navigate]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', user.id)
+      .single();
+    
+    if (data) setUserProfile(data);
+  };
 
   const fetchComplaints = async () => {
     try {
@@ -238,8 +252,18 @@ export default function Dashboard() {
             <Button variant="ghost" size="icon" onClick={() => navigate('/community')} title="Community">
               <Users className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
-              <User className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate('/profile')}
+              className="rounded-full p-0 h-10 w-10"
+            >
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={userProfile?.avatar_url || ''} />
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {userProfile?.full_name?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
             </Button>
             <NotificationBell />
             <ThemeToggle />

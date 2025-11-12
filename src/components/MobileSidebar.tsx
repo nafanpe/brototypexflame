@@ -6,18 +6,39 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, User, LogOut, Home, PlusCircle, Users } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Menu, LogOut, Home, PlusCircle, Users } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationBell } from './NotificationBell';
 import brototypeLogo from '@/assets/brototype-logo.png';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function MobileSidebar() {
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', user.id)
+      .single();
+    
+    if (data) setUserProfile(data);
+  };
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -75,7 +96,12 @@ export function MobileSidebar() {
             className="justify-start text-base" 
             onClick={() => handleNavigate('/profile')}
           >
-            <User className="mr-2 h-4 w-4" />
+            <Avatar className="mr-2 h-5 w-5">
+              <AvatarImage src={userProfile?.avatar_url || ''} />
+              <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                {userProfile?.full_name?.charAt(0) || 'U'}
+              </AvatarFallback>
+            </Avatar>
             Profile
           </Button>
         </nav>

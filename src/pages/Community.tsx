@@ -313,8 +313,18 @@ export default function Community() {
                 <PostForm />
               </DialogContent>
             </Dialog>
-            <Button variant="ghost" size="icon" onClick={() => navigate('/profile')} className="hover:bg-gray-900 text-white">
-              <User className="h-4 w-4" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate('/profile')}
+              className="rounded-full p-0 h-10 w-10 hover:bg-gray-900"
+            >
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={userProfile?.avatar_url || ''} />
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {userProfile?.full_name?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
             </Button>
             <NotificationBell />
             <ThemeToggle />
