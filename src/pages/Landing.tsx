@@ -107,11 +107,11 @@ const Landing = () => {
       </motion.section>
 
       {/* Section 2: Chaos to Clarity Story */}
-      <section className="min-h-screen flex items-center justify-center px-6 py-20 relative overflow-hidden">
+      <section className="min-h-screen flex items-center justify-center px-6 py-12 relative overflow-hidden">
         <FadeInSection>
           <div className="max-w-5xl mx-auto">
             {/* Discord Bubbles Animation */}
-            <div className="relative mb-16 h-[400px] flex items-center justify-center">
+            <div className="relative mb-12 h-[500px] flex items-center justify-center">
               {/* Chaotic Discord-style bubbles */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
