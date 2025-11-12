@@ -21,7 +21,8 @@ import {
   Lock,
   ArrowUp,
   Hash,
-  User
+  User,
+  Users
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -232,6 +233,9 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="hidden md:flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/community')} title="Community">
+              <Users className="h-4 w-4" />
+            </Button>
             <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
               <User className="h-4 w-4" />
             </Button>

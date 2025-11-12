@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Community from "./pages/Community";
 import NewComplaint from "./pages/NewComplaint";
 import ComplaintDetail from "./pages/ComplaintDetail";
 import Profile from "./pages/Profile";
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/community" element={<Community />} />
             <Route path="/new-complaint" element={<NewComplaint />} />
             <Route path="/complaint/:id" element={<ComplaintDetail />} />
             <Route path="/profile" element={<Profile />} />

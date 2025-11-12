@@ -6,7 +6,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, User, LogOut, Home, PlusCircle } from "lucide-react";
+import { Menu, User, LogOut, Home, PlusCircle, Users } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
@@ -53,6 +53,14 @@ export function MobileSidebar() {
           >
             <Home className="mr-2 h-4 w-4" />
             Dashboard
+          </Button>
+          <Button 
+            variant="ghost" 
+            className="justify-start text-base" 
+            onClick={() => handleNavigate('/community')}
+          >
+            <Users className="mr-2 h-4 w-4" />
+            Community
           </Button>
           <Button 
             variant="ghost" 
