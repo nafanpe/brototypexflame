@@ -258,11 +258,9 @@ export type Database = {
           avatar_url: string | null
           batch_department: string | null
           created_at: string
-          email: string
           full_name: string
           id: string
           is_active: boolean | null
-          phone_number: string | null
           role: Database["public"]["Enums"]["app_role"]
           updated_at: string
         }
@@ -270,11 +268,9 @@ export type Database = {
           avatar_url?: string | null
           batch_department?: string | null
           created_at?: string
-          email: string
           full_name: string
           id: string
           is_active?: boolean | null
-          phone_number?: string | null
           role: Database["public"]["Enums"]["app_role"]
           updated_at?: string
         }
@@ -282,12 +278,34 @@ export type Database = {
           avatar_url?: string | null
           batch_department?: string | null
           created_at?: string
-          email?: string
           full_name?: string
           id?: string
           is_active?: boolean | null
-          phone_number?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles_sensitive: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          phone_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          phone_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          phone_number?: string | null
           updated_at?: string
         }
         Relationships: []
