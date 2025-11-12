@@ -308,7 +308,7 @@ export default function Dashboard() {
               className="pl-10"
             />
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 overflow-x-auto pb-2 md:flex-wrap md:overflow-x-visible">
             <Button
               variant={filter === 'all' ? 'default' : 'outline'}
               onClick={() => setFilter('all')}
