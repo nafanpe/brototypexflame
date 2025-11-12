@@ -234,7 +234,7 @@ export default function Community() {
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={280}
-          className="min-h-[100px] resize-none bg-black border-gray-800 text-white placeholder:text-gray-500"
+          className="min-h-[100px] resize-none"
         />
         {imagePreview && (
           <div className="relative">
@@ -261,12 +261,12 @@ export default function Community() {
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-400 hover:text-primary"
+              className="text-muted-foreground hover:text-primary"
               onClick={() => document.getElementById('image-upload')?.click()}
             >
               <ImageIcon className="h-5 w-5" />
             </Button>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               {postContent.length}/280
             </span>
           </div>
@@ -283,32 +283,32 @@ export default function Community() {
   );
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-black border-b border-gray-800 sticky top-0 z-10 backdrop-blur-sm bg-black/80">
+      <header className="bg-card border-b border-border sticky top-0 z-10 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} className="hover:bg-gray-900 text-white">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} className="hover:bg-accent">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-smooth" onClick={() => navigate('/')}>
               <img src={brototypeLogo} alt="Brototype" className="h-10" />
               <div>
-                <h1 className="text-2xl font-bold text-white">Brototype Connect</h1>
-                <p className="text-sm text-gray-400">Community</p>
+                <h1 className="text-2xl font-bold text-foreground">Brototype Connect</h1>
+                <p className="text-sm text-muted-foreground">Community</p>
               </div>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-2">
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="icon" className="border-gray-800 hover:bg-gray-900 text-white">
+                <Button variant="outline" size="icon">
                   <PlusCircle className="h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-black border-gray-800 text-white">
+              <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="text-white">Create Post</DialogTitle>
+                  <DialogTitle>Create Post</DialogTitle>
                 </DialogHeader>
                 <PostForm />
               </DialogContent>
@@ -317,7 +317,7 @@ export default function Community() {
               variant="ghost" 
               size="icon" 
               onClick={() => navigate('/profile')}
-              className="rounded-full p-0 h-10 w-10 hover:bg-gray-900"
+              className="rounded-full p-0 h-10 w-10 hover:bg-accent"
             >
               <Avatar className="h-9 w-9">
                 <AvatarImage src={userProfile?.avatar_url || ''} />
@@ -328,7 +328,7 @@ export default function Community() {
             </Button>
             <NotificationBell />
             <ThemeToggle />
-            <Button variant="outline" onClick={signOut} className="border-gray-800 hover:bg-gray-900 text-white">
+            <Button variant="outline" onClick={signOut}>
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </Button>
@@ -336,7 +336,7 @@ export default function Community() {
 
           <div className="flex md:hidden items-center justify-between w-full">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} className="hover:bg-gray-900 text-white">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} className="hover:bg-accent">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-3 cursor-pointer hover:opacity-80" onClick={() => navigate('/')}>
@@ -354,7 +354,7 @@ export default function Community() {
           {/* Center Column - Feed (70%) */}
           <div className="lg:col-span-7 xl:col-span-7">
             {/* Create Post */}
-            <div className="border-b border-gray-800 p-4">
+            <div className="border-b border-border p-4 bg-card">
               <PostForm />
             </div>
 
@@ -364,8 +364,8 @@ export default function Community() {
                 <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
               ))}
               {posts.length === 0 && (
-                <div className="py-12 text-center border-b border-gray-800">
-                  <p className="text-gray-500">No posts yet. Be the first to post!</p>
+                <div className="py-12 text-center border-b border-border bg-card">
+                  <p className="text-muted-foreground">No posts yet. Be the first to post!</p>
                 </div>
               )}
             </div>
@@ -374,36 +374,36 @@ export default function Community() {
           {/* Right Sidebar (30%) */}
           <div className="hidden lg:block lg:col-span-5 xl:col-span-5 pl-6 space-y-4 pt-4">
             {/* Search */}
-            <div className="bg-black border border-gray-800 rounded-lg p-4">
+            <div className="bg-card border border-border rounded-lg p-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search Community"
-                  className="pl-10 bg-black border-gray-800 text-white placeholder:text-gray-500"
+                  className="pl-10"
                   disabled
                 />
               </div>
             </div>
 
             {/* What's Happening */}
-            <div className="bg-black border border-gray-800 rounded-lg p-4">
-              <h3 className="font-semibold flex items-center gap-2 mb-4 text-white">
+            <div className="bg-card border border-border rounded-lg p-4">
+              <h3 className="font-semibold flex items-center gap-2 mb-4 text-foreground">
                 <TrendingUp className="h-4 w-4" />
                 What's Happening
               </h3>
               <div className="space-y-3">
                 {['#Placements', '#Hackathons', '#React', '#JavaScript', '#WebDevelopment'].map((topic) => (
-                  <div key={topic} className="py-2 cursor-pointer hover:bg-gray-900 rounded-md px-2 transition-colors">
-                    <p className="font-medium text-sm text-white">{topic}</p>
-                    <p className="text-xs text-gray-500">Trending in Tech</p>
+                  <div key={topic} className="py-2 cursor-pointer hover:bg-accent rounded-md px-2 transition-colors">
+                    <p className="font-medium text-sm text-foreground">{topic}</p>
+                    <p className="text-xs text-muted-foreground">Trending in Tech</p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Top Complaints */}
-            <div className="bg-black border border-gray-800 rounded-lg p-4">
-              <h3 className="font-semibold mb-4 text-white flex items-center gap-2">
+            <div className="bg-card border border-border rounded-lg p-4">
+              <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
                 Top Complaints
               </h3>
@@ -411,18 +411,18 @@ export default function Community() {
                 {topComplaints.map((complaint) => (
                   <div
                     key={complaint.id}
-                    className="py-2 cursor-pointer hover:bg-gray-900 rounded-md px-2 transition-colors"
+                    className="py-2 cursor-pointer hover:bg-accent rounded-md px-2 transition-colors"
                     onClick={() => navigate(`/complaint/${complaint.id}`)}
                   >
-                    <p className="font-medium text-sm text-white line-clamp-2">{complaint.title}</p>
+                    <p className="font-medium text-sm text-foreground line-clamp-2">{complaint.title}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <p className="text-xs text-gray-500">{complaint.complaint_number}</p>
+                      <p className="text-xs text-muted-foreground">{complaint.complaint_number}</p>
                       <p className="text-xs text-primary">{complaint.upvote_count} upvotes</p>
                     </div>
                   </div>
                 ))}
                 {topComplaints.length === 0 && (
-                  <p className="text-xs text-gray-500 text-center py-4">No complaints yet</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">No complaints yet</p>
                 )}
               </div>
             </div>
