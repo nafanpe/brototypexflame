@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { NotificationBell } from '@/components/NotificationBell';
 import { 
   AlertCircle, 
   CheckCircle2, 
@@ -17,7 +18,10 @@ import {
   FileText,
   Eye,
   CheckCircle,
-  Lock
+  Lock,
+  ArrowUp,
+  Hash,
+  User
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -33,6 +37,11 @@ interface Complaint {
   created_at: string;
   upvote_count: number;
   location: string;
+  user_id: string;
+}
+
+interface UserUpvote {
+  complaint_id: string;
 }
 
 interface Stats {
@@ -65,6 +74,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'resolved'>('all');
+  const [userUpvotes, setUserUpvotes] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) {
@@ -73,6 +83,7 @@ export default function Dashboard() {
     }
     
     fetchComplaints();
+    fetchUserUpvotes();
     setupRealtimeSubscription();
   }, [user, navigate]);
 
@@ -105,6 +116,54 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchUserUpvotes = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('complaint_upvotes')
+      .select('complaint_id')
+      .eq('user_id', user.id);
+
+    if (data) {
+      setUserUpvotes(new Set(data.map((u: UserUpvote) => u.complaint_id)));
+    }
+  };
+
+  const handleUpvote = async (complaintId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
+
+    const isUpvoted = userUpvotes.has(complaintId);
+
+    try {
+      if (isUpvoted) {
+        await supabase
+          .from('complaint_upvotes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('complaint_id', complaintId);
+      } else {
+        await supabase
+          .from('complaint_upvotes')
+          .insert({ user_id: user.id, complaint_id: complaintId });
+      }
+
+      fetchComplaints();
+      fetchUserUpvotes();
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error.message,
+      });
+    }
+  };
+
+  const getComplaintNumber = (complaintNumber: string) => {
+    const match = complaintNumber.match(/-(\d+)$/);
+    return match ? `#${match[1]}` : '#1';
   };
 
   const setupRealtimeSubscription = () => {
@@ -166,6 +225,10 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
+              <User className="h-4 w-4" />
+            </Button>
+            <NotificationBell />
             <ThemeToggle />
             <Button variant="outline" onClick={signOut} className="hover-highlight">
               <LogOut className="mr-2 h-4 w-4" />
@@ -281,9 +344,15 @@ export default function Dashboard() {
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-3">
-                    <Badge className={`flex items-center gap-1.5 ${statusConfig[complaint.status as keyof typeof statusConfig]?.color}`}>
-                      {statusConfig[complaint.status as keyof typeof statusConfig]?.icon} {statusConfig[complaint.status as keyof typeof statusConfig]?.label}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        <Hash className="h-3 w-3" />
+                        {getComplaintNumber(complaint.complaint_number)}
+                      </Badge>
+                      <Badge className={`flex items-center gap-1.5 ${statusConfig[complaint.status as keyof typeof statusConfig]?.color}`}>
+                        {statusConfig[complaint.status as keyof typeof statusConfig]?.icon} {statusConfig[complaint.status as keyof typeof statusConfig]?.label}
+                      </Badge>
+                    </div>
                     <span className={`text-xs font-medium ${urgencyColors[complaint.urgency as keyof typeof urgencyColors]}`}>
                       {complaint.urgency.toUpperCase()}
                     </span>
@@ -293,21 +362,26 @@ export default function Dashboard() {
                   
                   <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
                     <span>{formatTimeAgo(complaint.created_at)}</span>
-                    <span>•</span>
-                    <span>{complaint.complaint_number}</span>
                   </div>
 
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <TrendingUp className="h-3 w-3" />
-                      <span>{complaint.upvote_count}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <span className="px-2 py-1 bg-muted rounded text-xs">
+                        {complaint.category}
+                      </span>
+                      {complaint.location && (
+                        <span className="text-xs truncate">{complaint.location}</span>
+                      )}
                     </div>
-                    <span className="px-2 py-1 bg-muted rounded text-xs">
-                      {complaint.category}
-                    </span>
-                    {complaint.location && (
-                      <span className="text-xs truncate">{complaint.location}</span>
-                    )}
+                    <Button
+                      variant={userUpvotes.has(complaint.id) ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={(e) => handleUpvote(complaint.id, e)}
+                      className="gap-1"
+                    >
+                      <ArrowUp className="h-3 w-3" />
+                      <span className="text-xs">{complaint.upvote_count}</span>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

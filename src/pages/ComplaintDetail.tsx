@@ -7,7 +7,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { ArrowLeft, MapPin, Clock, User, MessageSquare, Loader2, CheckCircle, XCircle, FileText, Eye, Lock } from 'lucide-react';
+import { UserBadge } from '@/components/UserBadge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { ArrowLeft, MapPin, Clock, User, MessageSquare, Loader2, CheckCircle, XCircle, FileText, Eye, Lock, Trash2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -25,6 +37,8 @@ export default function ComplaintDetail() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
+  const [images, setImages] = useState<any[]>([]);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -78,6 +92,15 @@ export default function ComplaintDetail() {
       }
 
       setComments(commentsData || []);
+
+      // Fetch images
+      const { data: imagesData } = await supabase
+        .from('complaint_images')
+        .select('*')
+        .eq('complaint_id', id)
+        .order('uploaded_at', { ascending: true });
+
+      setImages(imagesData || []);
     } catch (error: any) {
       console.error('Fetch error:', error);
       toast({
@@ -153,6 +176,34 @@ export default function ComplaintDetail() {
         title: 'Error',
         description: error.message,
       });
+    }
+  };
+
+  const handleDeleteComplaint = async () => {
+    if (!user || !complaint || complaint.user_id !== user.id) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('complaints')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Complaint Deleted',
+        description: 'Your complaint has been deleted successfully',
+      });
+      navigate('/dashboard');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error.message,
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -257,10 +308,13 @@ export default function ComplaintDetail() {
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span>{format(new Date(complaint.created_at), 'MMM dd, yyyy')}</span>
               </div>
-              {!complaint.is_anonymous && (
+              {!complaint.is_anonymous && complaint.profiles && (
                 <div className="flex items-center gap-2 text-sm">
                   <User className="h-4 w-4 text-muted-foreground" />
-                  <span>{complaint.profiles?.full_name || 'Unknown'}</span>
+                  <UserBadge 
+                    userId={complaint.user_id} 
+                    userName={complaint.profiles.full_name || 'Unknown'} 
+                  />
                 </div>
               )}
             </div>
@@ -321,6 +375,31 @@ export default function ComplaintDetail() {
           </Card>
         )}
 
+        {images.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImageIcon className="h-5 w-5" />
+                Images ({images.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {images.map((image) => (
+                  <div key={image.id} className="aspect-square rounded-lg overflow-hidden border hover:shadow-lg transition-shadow cursor-pointer">
+                    <img
+                      src={image.image_url}
+                      alt="Complaint"
+                      className="w-full h-full object-cover"
+                      onClick={() => window.open(image.image_url, '_blank')}
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -336,9 +415,12 @@ export default function ComplaintDetail() {
                 {comments.map((comment) => (
                   <div key={comment.id} className="border-l-2 border-primary/20 pl-4 py-2">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-sm">
-                        {comment.profiles?.full_name || 'Unknown'}
-                      </span>
+                      {comment.profiles && (
+                        <UserBadge 
+                          userId={comment.user_id} 
+                          userName={comment.profiles.full_name || 'Unknown'} 
+                        />
+                      )}
                       <span className="text-xs text-muted-foreground">
                         {format(new Date(comment.created_at), 'MMM dd, yyyy HH:mm')}
                       </span>
@@ -373,6 +455,34 @@ export default function ComplaintDetail() {
                 </Button>
               </div>
             </div>
+
+            {user && complaint && user.id === complaint.user_id && (
+              <div className="pt-4 border-t">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" disabled={deleting}>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Complaint
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your
+                        complaint and all associated comments and images.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteComplaint}>
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
