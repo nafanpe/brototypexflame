@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import brototypeLogo from '@/assets/brototype-logo.png';
 
 export default function Auth() {
   const { signIn, signUp } = useAuth();
@@ -61,17 +62,18 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-muted to-background">
-      <Card className="w-full max-w-md shadow-card-hover border-2">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      <Card className="w-full max-w-md shadow-card-hover border-2 animate-fade-in">
         <CardHeader className="space-y-3 text-center">
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-3xl font-bold text-primary-foreground">BC</span>
-            </div>
+            <img src={brototypeLogo} alt="Brototype" className="h-16 hover-scale" />
           </div>
-          <CardTitle className="text-3xl font-bold">Welcome to Brototype Connect</CardTitle>
+          <CardTitle className="text-3xl font-bold">Brototype Connect</CardTitle>
           <CardDescription className="text-base">
-            Your premium complaint management platform
+            Welcome to Brototype Connect
           </CardDescription>
         </CardHeader>
         <CardContent>

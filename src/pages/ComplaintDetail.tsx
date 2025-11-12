@@ -36,7 +36,7 @@ export default function ComplaintDetail() {
         .from('complaints')
         .select('*, profiles(*)')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (complaintError) throw complaintError;
       setComplaint(complaintData);
@@ -138,12 +138,12 @@ export default function ComplaintDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background animate-fade-in">
       <header className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+              <Button variant="ghost" onClick={() => navigate('/dashboard')} className="hover-scale">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>

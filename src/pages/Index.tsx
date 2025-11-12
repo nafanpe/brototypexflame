@@ -1,27 +1,33 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import brototypeLogo from '@/assets/brototype-logo.png';
 import { ArrowRight, CheckCircle, Shield, Zap } from 'lucide-react';
 
-const Index = () => {
+export default function Index() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      
       {/* Hero Section */}
-      <section className="relative gradient-hero py-20 md:py-32">
+      <section className="relative py-20 md:py-32 animate-fade-in">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <img src={brototypeLogo} alt="Brototype" className="h-24 mx-auto mb-8 hover-scale" />
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Brototype Connect
           </h1>
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Premium complaint management system for seamless communication between students and staff
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
               onClick={() => navigate('/auth')}
-              className="bg-white text-primary hover:bg-white/90 gap-2"
+              className="gap-2 hover-scale"
             >
               Get Started
               <ArrowRight className="h-4 w-4" />
@@ -30,7 +36,7 @@ const Index = () => {
               size="lg"
               variant="outline"
               onClick={() => navigate('/auth')}
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+              className="hover-scale"
             >
               Learn More
             </Button>
@@ -50,7 +56,7 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth text-center">
+          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth hover-scale text-center">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Zap className="h-8 w-8 text-primary" />
             </div>
@@ -60,7 +66,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth text-center">
+          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth hover-scale text-center">
             <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-success" />
             </div>
@@ -70,7 +76,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth text-center">
+          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth hover-scale text-center">
             <div className="w-16 h-16 bg-info/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="h-8 w-8 text-info" />
             </div>
@@ -83,18 +89,18 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 gradient-primary">
+      <section className="py-20 bg-card border-y">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Ready to Get Started?
           </h2>
-          <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Join Brototype Connect today and experience seamless complaint management
           </p>
           <Button
             size="lg"
             onClick={() => navigate('/auth')}
-            className="bg-white text-primary hover:bg-white/90"
+            className="hover-scale"
           >
             Sign Up Now
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -110,6 +116,4 @@ const Index = () => {
       </footer>
     </div>
   );
-};
-
-export default Index;
+}

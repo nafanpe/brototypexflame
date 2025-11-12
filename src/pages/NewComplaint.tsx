@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -27,6 +27,12 @@ export default function NewComplaint() {
   const [location, setLocation] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [images, setImages] = useState<File[]>([]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -134,13 +140,13 @@ export default function NewComplaint() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-background animate-fade-in">
       <header className="bg-card border-b shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={() => navigate('/dashboard')}
-            className="gap-2"
+            className="gap-2 hover-scale"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
