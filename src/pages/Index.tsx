@@ -16,7 +16,7 @@ export default function Index() {
       {/* Hero Section */}
       <section className="relative py-20 md:py-32 animate-fade-in">
         <div className="container mx-auto px-4 text-center">
-          <img src={brototypeLogo} alt="Brototype" className="h-24 mx-auto mb-8 hover-scale" />
+          <img src={brototypeLogo} alt="Brototype" className="h-24 mx-auto mb-8 hover-highlight" />
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Brototype Connect
           </h1>
@@ -27,7 +27,7 @@ export default function Index() {
             <Button
               size="lg"
               onClick={() => navigate('/auth')}
-              className="gap-2 hover-scale"
+              className="gap-2 hover-highlight"
             >
               Get Started
               <ArrowRight className="h-4 w-4" />
@@ -36,7 +36,7 @@ export default function Index() {
               size="lg"
               variant="outline"
               onClick={() => navigate('/auth')}
-              className="hover-scale"
+              className="hover-highlight"
             >
               Learn More
             </Button>
@@ -56,7 +56,7 @@ export default function Index() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth hover-scale text-center">
+          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth hover-highlight text-center">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Zap className="h-8 w-8 text-primary" />
             </div>
@@ -66,7 +66,7 @@ export default function Index() {
             </p>
           </div>
 
-          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth hover-scale text-center">
+          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth hover-highlight text-center">
             <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="h-8 w-8 text-success" />
             </div>
@@ -76,7 +76,7 @@ export default function Index() {
             </p>
           </div>
 
-          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth hover-scale text-center">
+          <div className="bg-card p-8 rounded-lg shadow-card hover:shadow-card-hover transition-smooth hover-highlight text-center">
             <div className="w-16 h-16 bg-info/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="h-8 w-8 text-info" />
             </div>
@@ -100,7 +100,7 @@ export default function Index() {
           <Button
             size="lg"
             onClick={() => navigate('/auth')}
-            className="hover-scale"
+            className="hover-highlight"
           >
             Sign Up Now
             <ArrowRight className="ml-2 h-4 w-4" />

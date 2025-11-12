@@ -153,7 +153,7 @@ All colors MUST be HSL.
     background: var(--gradient-hero);
   }
 
-  .hover-scale {
-    @apply transition-smooth hover:scale-105;
+  .hover-highlight {
+    @apply transition-smooth hover:bg-accent/30;
   }
 }

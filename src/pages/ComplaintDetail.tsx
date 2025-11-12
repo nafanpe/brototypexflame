@@ -49,7 +49,7 @@ export default function ComplaintDetail() {
     try {
       const { data: complaintData, error: complaintError } = await supabase
         .from('complaints')
-        .select('*, profiles(*)')
+        .select('*, profiles!complaints_user_id_fkey(*)')
         .eq('id', id)
         .maybeSingle();
 
@@ -68,7 +68,7 @@ export default function ComplaintDetail() {
 
       const { data: commentsData, error: commentsError } = await supabase
         .from('complaint_comments')
-        .select('*, profiles(*)')
+        .select('*, profiles!complaint_comments_user_id_fkey(*)')
         .eq('complaint_id', id)
         .order('created_at', { ascending: true });
 
@@ -209,7 +209,7 @@ export default function ComplaintDetail() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate('/dashboard')} className="hover-scale">
+              <Button variant="ghost" onClick={() => navigate('/dashboard')}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>

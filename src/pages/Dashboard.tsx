@@ -155,7 +155,7 @@ export default function Dashboard() {
       <header className="bg-card border-b shadow-sm sticky top-0 z-10 animate-fade-in">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={brototypeLogo} alt="Brototype" className="h-10 hover-scale transition-smooth" />
+            <img src={brototypeLogo} alt="Brototype" className="h-10 hover-highlight transition-smooth" />
             <div>
               <h1 className="text-2xl font-bold">Brototype Connect</h1>
               <p className="text-sm text-muted-foreground">Complaint Management System</p>
@@ -163,7 +163,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button variant="outline" onClick={signOut} className="hover-scale">
+            <Button variant="outline" onClick={signOut} className="hover-highlight">
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </Button>
@@ -174,7 +174,7 @@ export default function Dashboard() {
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
-          <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-scale">
+          <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Complaints</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -185,7 +185,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-scale">
+          <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Active Complaints</CardTitle>
               <Clock className="h-4 w-4 text-warning" />
@@ -196,7 +196,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-scale">
+          <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Resolved</CardTitle>
               <CheckCircle2 className="h-4 w-4 text-success" />
@@ -272,7 +272,7 @@ export default function Dashboard() {
             {filteredComplaints.map((complaint) => (
               <Card 
                 key={complaint.id} 
-                className="shadow-card hover:shadow-card-hover transition-smooth cursor-pointer hover-scale"
+                className="shadow-card hover:shadow-card-hover transition-smooth cursor-pointer hover-highlight"
                 onClick={() => navigate(`/complaint/${complaint.id}`)}
               >
                 <CardContent className="p-6">

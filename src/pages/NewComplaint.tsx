@@ -146,7 +146,7 @@ export default function NewComplaint() {
           <Button
             variant="ghost"
             onClick={() => navigate('/dashboard')}
-            className="gap-2 hover-scale"
+            className="gap-2 hover-highlight"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard

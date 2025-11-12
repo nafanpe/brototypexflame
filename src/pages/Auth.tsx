@@ -69,7 +69,7 @@ export default function Auth() {
       <Card className="w-full max-w-md shadow-card-hover border-2 animate-fade-in">
         <CardHeader className="space-y-3 text-center">
           <div className="flex justify-center">
-            <img src={brototypeLogo} alt="Brototype" className="h-16 hover-scale" />
+            <img src={brototypeLogo} alt="Brototype" className="h-16 hover-highlight" />
           </div>
           <CardTitle className="text-3xl font-bold">Brototype Connect</CardTitle>
           <CardDescription className="text-base">
