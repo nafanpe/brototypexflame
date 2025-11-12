@@ -1,0 +1,321 @@
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { 
+  AlertCircle, 
+  CheckCircle2, 
+  Clock, 
+  PlusCircle, 
+  Search, 
+  Bell,
+  LogOut,
+  TrendingUp,
+  Eye,
+  MessageSquare
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+
+interface Complaint {
+  id: string;
+  complaint_number: string;
+  title: string;
+  status: string;
+  category: string;
+  urgency: string;
+  created_at: string;
+  upvote_count: number;
+  location: string;
+}
+
+interface Stats {
+  total: number;
+  active: number;
+  resolved: number;
+}
+
+const statusConfig = {
+  submitted: { label: 'Submitted', icon: '🆕', color: 'bg-primary' },
+  in_review: { label: 'In Review', icon: '👀', color: 'bg-warning' },
+  in_progress: { label: 'In Progress', icon: '⚡', color: 'bg-info' },
+  resolved: { label: 'Resolved', icon: '✅', color: 'bg-success' },
+  closed: { label: 'Closed', icon: '🔒', color: 'bg-muted' },
+};
+
+const urgencyColors = {
+  low: 'text-muted-foreground',
+  medium: 'text-warning',
+  high: 'text-danger',
+  critical: 'text-danger font-bold',
+};
+
+export default function Dashboard() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [stats, setStats] = useState<Stats>({ total: 0, active: 0, resolved: 0 });
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState<'all' | 'active' | 'resolved'>('all');
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    
+    fetchComplaints();
+    setupRealtimeSubscription();
+  }, [user, navigate]);
+
+  const fetchComplaints = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('complaints')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setComplaints(data || []);
+      
+      const total = data?.length || 0;
+      const active = data?.filter(c => 
+        ['submitted', 'in_review', 'in_progress'].includes(c.status)
+      ).length || 0;
+      const resolved = data?.filter(c => 
+        ['resolved', 'closed'].includes(c.status)
+      ).length || 0;
+
+      setStats({ total, active, resolved });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setupRealtimeSubscription = () => {
+    const channel = supabase
+      .channel('complaints-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'complaints'
+        },
+        () => {
+          fetchComplaints();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const filteredComplaints = complaints.filter(complaint => {
+    const matchesSearch = complaint.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         complaint.complaint_number.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (filter === 'active') {
+      return matchesSearch && ['submitted', 'in_review', 'in_progress'].includes(complaint.status);
+    } else if (filter === 'resolved') {
+      return matchesSearch && ['resolved', 'closed'].includes(complaint.status);
+    }
+    return matchesSearch;
+  });
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  };
+
+  return (
+    <div className="min-h-screen bg-muted/30">
+      {/* Header */}
+      <header className="bg-card border-b shadow-sm sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
+              Brototype Connect
+            </h1>
+            <p className="text-sm text-muted-foreground">Complaint Management System</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 h-4 w-4 bg-danger rounded-full text-[10px] text-white flex items-center justify-center">
+                3
+              </span>
+            </Button>
+            <Button variant="outline" onClick={signOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="shadow-card hover:shadow-card-hover transition-smooth">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Total Complaints</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{stats.total}</div>
+              <p className="text-xs text-muted-foreground mt-1">All time submissions</p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card hover:shadow-card-hover transition-smooth">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Active Complaints</CardTitle>
+              <Clock className="h-4 w-4 text-warning" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-warning">{stats.active}</div>
+              <p className="text-xs text-muted-foreground mt-1">Pending resolution</p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card hover:shadow-card-hover transition-smooth">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Resolved</CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-success" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-success">{stats.resolved}</div>
+              <p className="text-xs text-muted-foreground mt-1">Successfully closed</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search complaints..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant={filter === 'all' ? 'default' : 'outline'}
+              onClick={() => setFilter('all')}
+            >
+              All
+            </Button>
+            <Button
+              variant={filter === 'active' ? 'default' : 'outline'}
+              onClick={() => setFilter('active')}
+            >
+              Active
+            </Button>
+            <Button
+              variant={filter === 'resolved' ? 'default' : 'outline'}
+              onClick={() => setFilter('resolved')}
+            >
+              Resolved
+            </Button>
+          </div>
+          <Button onClick={() => navigate('/new-complaint')} className="gap-2">
+            <PlusCircle className="h-4 w-4" />
+            New Complaint
+          </Button>
+        </div>
+
+        {/* Complaints Grid */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading complaints...</p>
+          </div>
+        ) : filteredComplaints.length === 0 ? (
+          <Card className="shadow-card">
+            <CardContent className="py-12 text-center">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No complaints found</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchQuery ? 'Try adjusting your search' : 'Start by creating your first complaint'}
+              </p>
+              {!searchQuery && (
+                <Button onClick={() => navigate('/new-complaint')}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Create Complaint
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredComplaints.map((complaint) => (
+              <Card 
+                key={complaint.id} 
+                className="shadow-card hover:shadow-card-hover transition-smooth cursor-pointer"
+                onClick={() => navigate(`/complaint/${complaint.id}`)}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Badge className={`${statusConfig[complaint.status as keyof typeof statusConfig]?.color} text-white`}>
+                      {statusConfig[complaint.status as keyof typeof statusConfig]?.icon} {statusConfig[complaint.status as keyof typeof statusConfig]?.label}
+                    </Badge>
+                    <span className={`text-xs font-medium ${urgencyColors[complaint.urgency as keyof typeof urgencyColors]}`}>
+                      {complaint.urgency.toUpperCase()}
+                    </span>
+                  </div>
+                  
+                  <h3 className="font-semibold mb-2 line-clamp-2">{complaint.title}</h3>
+                  
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+                    <span>{formatTimeAgo(complaint.created_at)}</span>
+                    <span>•</span>
+                    <span>{complaint.complaint_number}</span>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      <span>{complaint.upvote_count}</span>
+                    </div>
+                    <span className="px-2 py-1 bg-muted rounded text-xs">
+                      {complaint.category}
+                    </span>
+                    {complaint.location && (
+                      <span className="text-xs truncate">{complaint.location}</span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
