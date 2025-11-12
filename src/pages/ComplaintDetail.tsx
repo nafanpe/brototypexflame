@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { ArrowLeft, MapPin, Clock, User, MessageSquare, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, User, MessageSquare, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ComplaintDetail() {
   const { id } = useParams();
@@ -21,14 +22,28 @@ export default function ComplaintDetail() {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [resolutionNotes, setResolutionNotes] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
 
   useEffect(() => {
     if (!user) {
       navigate('/auth');
       return;
     }
+    checkAdminStatus();
     fetchComplaintDetails();
   }, [id, user]);
+
+  const checkAdminStatus = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    setIsAdmin(data?.role === 'admin');
+  };
 
   const fetchComplaintDetails = async () => {
     try {
@@ -38,21 +53,36 @@ export default function ComplaintDetail() {
         .eq('id', id)
         .maybeSingle();
 
-      if (complaintError) throw complaintError;
+      if (complaintError) {
+        console.error('Error fetching complaint:', complaintError);
+        throw complaintError;
+      }
+      
+      if (!complaintData) {
+        console.error('No complaint found with id:', id);
+        setLoading(false);
+        return;
+      }
+      
       setComplaint(complaintData);
 
-      const { data: commentsData } = await supabase
+      const { data: commentsData, error: commentsError } = await supabase
         .from('complaint_comments')
         .select('*, profiles(*)')
         .eq('complaint_id', id)
         .order('created_at', { ascending: true });
 
+      if (commentsError) {
+        console.error('Error fetching comments:', commentsError);
+      }
+
       setComments(commentsData || []);
     } catch (error: any) {
+      console.error('Fetch error:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to load complaint details',
+        description: error.message || 'Failed to load complaint details',
       });
     } finally {
       setLoading(false);
@@ -87,6 +117,42 @@ export default function ComplaintDetail() {
       });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!isAdmin || !user) return;
+
+    try {
+      const updateData: any = { status: newStatus };
+      
+      if (newStatus === 'resolved' || newStatus === 'closed') {
+        updateData.resolved_at = new Date().toISOString();
+        if (resolutionNotes.trim()) {
+          updateData.resolution_notes = resolutionNotes;
+        }
+      }
+
+      const { error } = await supabase
+        .from('complaints')
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Status Updated',
+        description: `Complaint status changed to ${newStatus}`,
+      });
+      
+      fetchComplaintDetails();
+      setResolutionNotes('');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error.message,
+      });
     }
   };
 
@@ -195,8 +261,64 @@ export default function ComplaintDetail() {
                 </div>
               )}
             </div>
+
+            {complaint.resolution_notes && (
+              <div className="pt-4 border-t">
+                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Resolution Notes
+                </h4>
+                <p className="text-sm text-muted-foreground">{complaint.resolution_notes}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {isAdmin && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Admin Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Change Status</label>
+                <Select value={selectedStatus || complaint.status} onValueChange={setSelectedStatus}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="submitted">Submitted</SelectItem>
+                    <SelectItem value="in_review">In Review</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="resolved">Resolved</SelectItem>
+                    <SelectItem value="closed">Closed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(selectedStatus === 'resolved' || selectedStatus === 'closed') && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Resolution Notes</label>
+                  <Textarea
+                    placeholder="Add resolution notes..."
+                    value={resolutionNotes}
+                    onChange={(e) => setResolutionNotes(e.target.value)}
+                    maxLength={500}
+                    className="min-h-[100px]"
+                  />
+                </div>
+              )}
+
+              <Button 
+                onClick={() => handleStatusChange(selectedStatus || complaint.status)}
+                disabled={!selectedStatus || selectedStatus === complaint.status}
+                className="w-full"
+              >
+                Update Status
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>

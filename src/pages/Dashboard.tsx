@@ -38,11 +38,11 @@ interface Stats {
 }
 
 const statusConfig = {
-  submitted: { label: 'Submitted', icon: '🆕', color: 'bg-primary' },
-  in_review: { label: 'In Review', icon: '👀', color: 'bg-warning' },
-  in_progress: { label: 'In Progress', icon: '⚡', color: 'bg-info' },
-  resolved: { label: 'Resolved', icon: '✅', color: 'bg-success' },
-  closed: { label: 'Closed', icon: '🔒', color: 'bg-muted' },
+  submitted: { label: 'Submitted', icon: '🆕', color: 'bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30' },
+  in_review: { label: 'In Review', icon: '👀', color: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/30' },
+  in_progress: { label: 'In Progress', icon: '⚡', color: 'bg-purple-500/20 text-purple-700 dark:text-purple-300 hover:bg-purple-500/30' },
+  resolved: { label: 'Resolved', icon: '✅', color: 'bg-green-500/20 text-green-700 dark:text-green-300 hover:bg-green-500/30' },
+  closed: { label: 'Closed', icon: '🔒', color: 'bg-gray-500/20 text-gray-700 dark:text-gray-300 hover:bg-gray-500/30' },
 };
 
 const urgencyColors = {
@@ -277,7 +277,7 @@ export default function Dashboard() {
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-3">
-                    <Badge className={`${statusConfig[complaint.status as keyof typeof statusConfig]?.color} text-white`}>
+                    <Badge className={statusConfig[complaint.status as keyof typeof statusConfig]?.color}>
                       {statusConfig[complaint.status as keyof typeof statusConfig]?.icon} {statusConfig[complaint.status as keyof typeof statusConfig]?.label}
                     </Badge>
                     <span className={`text-xs font-medium ${urgencyColors[complaint.urgency as keyof typeof urgencyColors]}`}>
