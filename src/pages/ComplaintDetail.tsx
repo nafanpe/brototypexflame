@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { ArrowLeft, MapPin, Clock, User, MessageSquare, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, User, MessageSquare, Loader2, CheckCircle, XCircle, FileText, Eye, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -158,17 +158,20 @@ export default function ComplaintDetail() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; icon: string }> = {
-      submitted: { variant: 'default', icon: '🆕' },
-      in_review: { variant: 'secondary', icon: '👀' },
-      in_progress: { variant: 'default', icon: '⚡' },
-      resolved: { variant: 'default', icon: '✅' },
-      closed: { variant: 'secondary', icon: '🔒' },
+    const statusIcons: Record<string, { variant: any; Icon: any }> = {
+      submitted: { variant: 'default', Icon: FileText },
+      in_review: { variant: 'secondary', Icon: Eye },
+      in_progress: { variant: 'default', Icon: Clock },
+      resolved: { variant: 'default', Icon: CheckCircle },
+      closed: { variant: 'secondary', Icon: Lock },
     };
-    const config = variants[status] || variants.submitted;
+    const config = statusIcons[status] || statusIcons.submitted;
+    const IconComponent = config.Icon;
+    
     return (
-      <Badge variant={config.variant} className="text-sm">
-        {config.icon} {status.replace('_', ' ').toUpperCase()}
+      <Badge variant={config.variant} className="text-sm flex items-center gap-1.5">
+        <IconComponent className="h-3.5 w-3.5" />
+        {status.replace('_', ' ').toUpperCase()}
       </Badge>
     );
   };

@@ -13,7 +13,11 @@ import {
   PlusCircle, 
   Search, 
   LogOut,
-  TrendingUp
+  TrendingUp,
+  FileText,
+  Eye,
+  CheckCircle,
+  Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -38,11 +42,11 @@ interface Stats {
 }
 
 const statusConfig = {
-  submitted: { label: 'Submitted', icon: '🆕', color: 'bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30' },
-  in_review: { label: 'In Review', icon: '👀', color: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/30' },
-  in_progress: { label: 'In Progress', icon: '⚡', color: 'bg-purple-500/20 text-purple-700 dark:text-purple-300 hover:bg-purple-500/30' },
-  resolved: { label: 'Resolved', icon: '✅', color: 'bg-green-500/20 text-green-700 dark:text-green-300 hover:bg-green-500/30' },
-  closed: { label: 'Closed', icon: '🔒', color: 'bg-gray-500/20 text-gray-700 dark:text-gray-300 hover:bg-gray-500/30' },
+  submitted: { label: 'Submitted', icon: <FileText className="h-3.5 w-3.5" />, color: 'bg-blue-500/20 text-blue-700 dark:text-blue-300 hover:bg-blue-500/30' },
+  in_review: { label: 'In Review', icon: <Eye className="h-3.5 w-3.5" />, color: 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-500/30' },
+  in_progress: { label: 'In Progress', icon: <Clock className="h-3.5 w-3.5" />, color: 'bg-purple-500/20 text-purple-700 dark:text-purple-300 hover:bg-purple-500/30' },
+  resolved: { label: 'Resolved', icon: <CheckCircle className="h-3.5 w-3.5" />, color: 'bg-green-500/20 text-green-700 dark:text-green-300 hover:bg-green-500/30' },
+  closed: { label: 'Closed', icon: <Lock className="h-3.5 w-3.5" />, color: 'bg-gray-500/20 text-gray-700 dark:text-gray-300 hover:bg-gray-500/30' },
 };
 
 const urgencyColors = {
@@ -277,7 +281,7 @@ export default function Dashboard() {
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-3">
-                    <Badge className={statusConfig[complaint.status as keyof typeof statusConfig]?.color}>
+                    <Badge className={`flex items-center gap-1.5 ${statusConfig[complaint.status as keyof typeof statusConfig]?.color}`}>
                       {statusConfig[complaint.status as keyof typeof statusConfig]?.icon} {statusConfig[complaint.status as keyof typeof statusConfig]?.label}
                     </Badge>
                     <span className={`text-xs font-medium ${urgencyColors[complaint.urgency as keyof typeof urgencyColors]}`}>
