@@ -2,6 +2,7 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/brototype-logo.png";
 import heroParallax from "@/assets/hero-parallax.jpg";
 
@@ -23,6 +24,11 @@ const FadeInSection = ({ children, delay = 0 }: { children: React.ReactNode; del
 
 const Landing = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleGetStarted = () => {
+    navigate(user ? '/dashboard' : '/auth');
+  };
 
   return (
     <div className="bg-black text-white overflow-x-hidden">
@@ -63,7 +69,7 @@ const Landing = () => {
           </p>
           <Button
             size="lg"
-            onClick={() => navigate("/auth")}
+            onClick={handleGetStarted}
             className="rounded-full px-8 py-6 text-lg font-semibold"
           >
             Get Started
@@ -148,7 +154,7 @@ const Landing = () => {
             </p>
             <Button
               size="lg"
-              onClick={() => navigate("/auth")}
+              onClick={handleGetStarted}
               className="rounded-full px-8 py-6 text-lg font-semibold"
             >
               Get Started
