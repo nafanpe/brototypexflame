@@ -381,7 +381,7 @@ export default function Dashboard() {
                       variant={userUpvotes.has(complaint.id) ? 'default' : 'outline'}
                       size="sm"
                       onClick={(e) => handleUpvote(complaint.id, e)}
-                      className={`gap-1 ${!userUpvotes.has(complaint.id) ? 'border-muted-foreground/30 text-muted-foreground hover:bg-muted hover:text-foreground' : ''}`}
+                      className={`gap-1 ${!userUpvotes.has(complaint.id) ? 'border-muted-foreground/30 text-muted-foreground hover:bg-muted hover:text-foreground' : 'bg-gray-300 dark:bg-primary text-gray-900 dark:text-primary-foreground hover:bg-gray-400 dark:hover:bg-primary/90'}`}
                     >
                       <ArrowUp className="h-3 w-3" />
                       <span className="text-xs">{complaint.upvote_count}</span>
