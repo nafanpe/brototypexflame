@@ -26,6 +26,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import brototypeLogo from '@/assets/brototype-logo.png';
+import { MobileSidebar } from '@/components/MobileSidebar';
 
 interface Complaint {
   id: string;
@@ -221,14 +222,16 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-card border-b shadow-sm sticky top-0 z-10 animate-fade-in">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-smooth" onClick={() => navigate('/')}>
+          
+          {/* ===== DESKTOP HEADER (Visible MD and up) ===== */}
+          <div className="hidden md:flex items-center gap-3 cursor-pointer hover:opacity-80 transition-smooth" onClick={() => navigate('/')}>
             <img src={brototypeLogo} alt="Brototype" className="h-10" />
             <div>
               <h1 className="text-2xl font-bold">Brototype Connect</h1>
               <p className="text-sm text-muted-foreground">Complaint Management System</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
               <User className="h-4 w-4" />
             </Button>
@@ -239,6 +242,15 @@ export default function Dashboard() {
               Logout
             </Button>
           </div>
+
+          {/* ===== MOBILE HEADER (Visible BELOW MD) ===== */}
+          <div className="flex md:hidden items-center justify-between w-full">
+            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-smooth" onClick={() => navigate('/')}>
+              <img src={brototypeLogo} alt="Brototype" className="h-9" />
+            </div>
+            <MobileSidebar />
+          </div>
+
         </div>
       </header>
 
