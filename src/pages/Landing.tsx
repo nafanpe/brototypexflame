@@ -51,7 +51,7 @@ const Landing = () => {
   };
 
   return (
-    <div className="bg-black text-white overflow-x-hidden" style={{ perspective: "1200px" }}>
+    <div className="bg-black text-white" style={{ perspective: "1200px" }}>
       {/* Section 1: The Hero with 3D Perspective */}
       <motion.section 
         ref={heroRef}
