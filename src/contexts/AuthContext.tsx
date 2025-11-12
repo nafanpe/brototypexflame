@@ -66,15 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    if (data.user && !error) {
-      await supabase.from('profiles').insert({
-        id: data.user.id,
-        email: email,
-        full_name: fullName,
-        role: 'student',
-      });
-    }
-
+    // Profile and user_role are automatically created by database trigger
+    // No manual insertion needed
     return { error };
   };
 
