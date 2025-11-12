@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Loader2, Upload, X } from 'lucide-react';
@@ -135,7 +136,7 @@ export default function NewComplaint() {
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="bg-card border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Button
             variant="ghost"
             onClick={() => navigate('/dashboard')}
@@ -144,6 +145,7 @@ export default function NewComplaint() {
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
           </Button>
+          <ThemeToggle />
         </div>
       </header>
 

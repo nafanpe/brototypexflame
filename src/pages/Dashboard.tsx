@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { 
   AlertCircle, 
   CheckCircle2, 
@@ -155,13 +156,17 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-card border-b shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent">
-              Brototype Connect
-            </h1>
-            <p className="text-sm text-muted-foreground">Complaint Management System</p>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-lg font-bold text-primary-foreground">BC</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold">Brototype Connect</h1>
+              <p className="text-sm text-muted-foreground">Complaint Management System</p>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 h-4 w-4 bg-danger rounded-full text-[10px] text-white flex items-center justify-center">

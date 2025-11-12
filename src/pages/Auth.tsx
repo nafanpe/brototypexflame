@@ -61,12 +61,17 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 gradient-hero">
-      <Card className="w-full max-w-md shadow-card-hover">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center font-bold">Brototype Connect</CardTitle>
-          <CardDescription className="text-center">
-            Premium Complaint Management System
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-muted to-background">
+      <Card className="w-full max-w-md shadow-card-hover border-2">
+        <CardHeader className="space-y-3 text-center">
+          <div className="flex justify-center">
+            <div className="h-16 w-16 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-3xl font-bold text-primary-foreground">BC</span>
+            </div>
+          </div>
+          <CardTitle className="text-3xl font-bold">Welcome to Brototype Connect</CardTitle>
+          <CardDescription className="text-base">
+            Your premium complaint management platform
           </CardDescription>
         </CardHeader>
         <CardContent>
