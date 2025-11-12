@@ -194,7 +194,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   };
 
   return (
-    <div className="border-b border-border p-4 hover:bg-accent/50 transition-colors bg-card">
+    <div className="border-b border-border dark:border-gray-800 p-4 hover:bg-accent/50 dark:hover:bg-gray-900/50 transition-colors bg-card dark:bg-black">
       <div className="flex gap-3">
         <Avatar className="h-10 w-10">
           <AvatarImage src={post.profiles.avatar_url || ''} />
@@ -209,21 +209,21 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               <UserBadge 
                 userId={post.user_id} 
                 userName={post.profiles.full_name}
-                className="text-foreground"
+                className="text-foreground dark:text-white"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground dark:text-gray-500">
                 {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
               </p>
             </div>
             {(isAdmin || post.user_id === user?.id) && (
-              <Button variant="ghost" size="icon" onClick={handleDelete} className="hover:bg-accent text-muted-foreground hover:text-destructive">
+              <Button variant="ghost" size="icon" onClick={handleDelete} className="hover:bg-accent dark:hover:bg-gray-800 text-muted-foreground dark:text-gray-400 hover:text-destructive dark:hover:text-red-500">
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}
           </div>
 
           {post.text_content && (
-            <p className="text-sm text-foreground whitespace-pre-wrap">{post.text_content}</p>
+            <p className="text-sm text-foreground dark:text-white whitespace-pre-wrap">{post.text_content}</p>
           )}
 
           {post.image_url && (
@@ -239,7 +239,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
               variant="ghost"
               size="sm"
               onClick={handleLike}
-              className={`hover:bg-accent ${isLiked ? 'text-red-500' : 'text-muted-foreground'}`}
+              className={`hover:bg-accent dark:hover:bg-gray-800 ${isLiked ? 'text-red-500' : 'text-muted-foreground dark:text-gray-400'}`}
             >
               <Heart className={`h-5 w-5 mr-1 ${isLiked ? 'fill-current' : ''}`} />
               <span className="text-sm">{localLikeCount}</span>
@@ -247,18 +247,18 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
 
             <Sheet open={sheetOpen} onOpenChange={handleSheetOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="hover:bg-accent text-muted-foreground">
+                <Button variant="ghost" size="sm" className="hover:bg-accent dark:hover:bg-gray-800 text-muted-foreground dark:text-gray-400">
                   <MessageCircle className="h-5 w-5 mr-1" />
                   <span className="text-sm">{localCommentCount}</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+              <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto dark:bg-black dark:border-gray-800">
                 <SheetHeader>
-                  <SheetTitle>Comments</SheetTitle>
+                  <SheetTitle className="dark:text-white">Comments</SheetTitle>
                 </SheetHeader>
 
                 {/* Original Post in Sheet */}
-                <div className="mt-6 pb-4 border-b border-border">
+                <div className="mt-6 pb-4 border-b border-border dark:border-gray-800">
                   <div className="flex gap-3">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src={post.profiles.avatar_url || ''} />
@@ -270,10 +270,10 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                       <UserBadge 
                         userId={post.user_id} 
                         userName={post.profiles.full_name}
-                        className="text-foreground"
+                        className="text-foreground dark:text-white"
                       />
                       {post.text_content && (
-                        <p className="text-sm text-foreground mt-2">{post.text_content}</p>
+                        <p className="text-sm text-foreground dark:text-white mt-2">{post.text_content}</p>
                       )}
                       {post.image_url && (
                         <img 
@@ -294,10 +294,10 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       maxLength={200}
-                      className="min-h-[80px]"
+                      className="min-h-[80px] dark:bg-black dark:border-gray-800 dark:text-white dark:placeholder:text-gray-500"
                     />
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground dark:text-gray-500">
                         {newComment.length}/200
                       </span>
                       <Button
@@ -317,23 +317,23 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                       <div key={comment.id} className="flex gap-3">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={comment.profiles.avatar_url || ''} />
-                          <AvatarFallback className="bg-muted text-muted-foreground">
+                          <AvatarFallback className="bg-muted dark:bg-gray-800 text-muted-foreground dark:text-white">
                             {comment.profiles.full_name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <div className="bg-muted rounded-lg p-3">
-                            <p className="font-semibold text-sm text-foreground">{comment.profiles.full_name}</p>
-                            <p className="text-sm text-foreground mt-1">{comment.text_content}</p>
+                          <div className="bg-muted dark:bg-gray-900 rounded-lg p-3">
+                            <p className="font-semibold text-sm text-foreground dark:text-white">{comment.profiles.full_name}</p>
+                            <p className="text-sm text-foreground dark:text-white mt-1">{comment.text_content}</p>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1 ml-3">
+                          <p className="text-xs text-muted-foreground dark:text-gray-500 mt-1 ml-3">
                             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                           </p>
                         </div>
                       </div>
                     ))}
                     {comments.length === 0 && (
-                      <p className="text-center text-muted-foreground text-sm py-8">
+                      <p className="text-center text-muted-foreground dark:text-gray-500 text-sm py-8">
                         No comments yet. Be the first to comment!
                       </p>
                     )}
