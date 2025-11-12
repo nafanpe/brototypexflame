@@ -234,7 +234,7 @@ export default function Community() {
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={280}
-          className="min-h-[100px] resize-none dark:bg-black dark:border-gray-800 dark:text-white dark:placeholder:text-gray-500"
+          className="min-h-[60px] resize-none dark:bg-black dark:border-gray-800 dark:text-white dark:placeholder:text-gray-500"
         />
         {imagePreview && (
           <div className="relative">
