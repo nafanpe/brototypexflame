@@ -386,14 +386,23 @@ export default function ComplaintDetail() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {images.map((image) => (
-                  <div key={image.id} className="aspect-square rounded-lg overflow-hidden border hover:shadow-lg transition-shadow cursor-pointer">
+                  <a
+                    key={image.id}
+                    href={image.image_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group aspect-square rounded-lg overflow-hidden border hover:shadow-lg transition-smooth"
+                  >
                     <img
-                      src={image.image_url}
-                      alt="Complaint"
-                      className="w-full h-full object-cover"
-                      onClick={() => window.open(image.image_url, '_blank')}
+                      src={image.thumbnail_url || image.image_url}
+                      alt="Complaint evidence"
+                      className="w-full h-full object-cover transition-smooth group-hover:opacity-90"
+                      onError={(e) => {
+                        console.error('Image failed to load:', image.image_url);
+                        e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage%3C/text%3E%3C/svg%3E';
+                      }}
                     />
-                  </div>
+                  </a>
                 ))}
               </div>
             </CardContent>

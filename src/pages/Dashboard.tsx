@@ -203,10 +203,14 @@ export default function Dashboard() {
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
+    
+    if (diffMs < 0) return 'Just now';
+    
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
+    if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     return `${diffDays}d ago`;
@@ -377,7 +381,7 @@ export default function Dashboard() {
                       variant={userUpvotes.has(complaint.id) ? 'default' : 'outline'}
                       size="sm"
                       onClick={(e) => handleUpvote(complaint.id, e)}
-                      className="gap-1"
+                      className={`gap-1 ${!userUpvotes.has(complaint.id) ? 'border-muted-foreground/30 text-muted-foreground hover:bg-muted hover:text-foreground' : ''}`}
                     >
                       <ArrowUp className="h-3 w-3" />
                       <span className="text-xs">{complaint.upvote_count}</span>
