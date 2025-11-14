@@ -37,7 +37,7 @@ interface Complaint {
 }
 
 export default function Community() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [postContent, setPostContent] = useState('');
@@ -51,17 +51,19 @@ export default function Community() {
   const [topPosts, setTopPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    if (!user) {
+    if (!user && !loading) {
       navigate('/auth');
       return;
     }
 
-    fetchUserProfile();
-    fetchPosts();
-    fetchTopComplaints();
-    fetchTopPosts();
-    subscribeToRealtimePosts();
-  }, [user]);
+    if (user) {
+      fetchUserProfile();
+      fetchPosts();
+      fetchTopComplaints();
+      fetchTopPosts();
+      subscribeToRealtimePosts();
+    }
+  }, [user, loading]);
 
   const fetchUserProfile = async () => {
     if (!user) return;
@@ -226,6 +228,7 @@ export default function Community() {
       setPostContent('');
       clearImage();
       setIsDialogOpen(false);
+      fetchPosts(); // Refresh posts immediately
       toast({
         title: 'Success',
         description: 'Your post has been published!'

@@ -21,12 +21,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let isInitialLoad = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (event === 'SIGNED_IN') {
+        // Only navigate to dashboard on actual sign-in, not on session restoration
+        if (event === 'SIGNED_IN' && !isInitialLoad) {
           setTimeout(() => {
             navigate('/dashboard');
           }, 0);
@@ -38,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      isInitialLoad = false;
     });
 
     return () => subscription.unsubscribe();
