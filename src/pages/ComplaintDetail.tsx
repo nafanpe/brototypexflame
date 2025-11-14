@@ -342,7 +342,7 @@ export default function ComplaintDetail() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="submitted">Submitted</SelectItem>
-                    <SelectItem value="under_review">In Review</SelectItem>
+                    <SelectItem value="in_review">In Review</SelectItem>
                     <SelectItem value="resolved">Resolved</SelectItem>
                   </SelectContent>
                 </Select>
