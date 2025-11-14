@@ -38,7 +38,7 @@ export const StickyNav = ({ onGetStarted }: StickyNavProps) => {
             </div>
             <Button
               onClick={onGetStarted}
-              className="rounded-full px-6 py-2 gradient-text-hover"
+              className="rounded-full px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90"
             >
               Get Started
             </Button>
