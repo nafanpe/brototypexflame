@@ -210,7 +210,13 @@ const Landing = () => {
           >
             {/* Slide 1: Submit */}
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
-              <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6">
+              <motion.div 
+                className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                viewport={{ once: false, amount: 0.4 }}
+              >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6">Submit.</h2>
                   <p className="text-xl text-gray-400 leading-relaxed">
@@ -218,39 +224,38 @@ const Landing = () => {
                   </p>
                 </div>
                 <div className="relative">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    viewport={{ once: true }}
-                  >
-                    <Card className="bg-card border-border p-6">
-                      <div className="space-y-4">
-                        <div>
-                          <div className="h-3 bg-muted rounded w-24 mb-3" />
-                          <div className="h-10 bg-muted rounded" />
-                        </div>
-                        <div>
-                          <div className="h-3 bg-muted rounded w-32 mb-3" />
-                          <div className="h-24 bg-muted rounded" />
-                        </div>
-                        <div className="flex gap-2">
-                          <div className="h-20 w-20 bg-muted rounded" />
-                          <div className="h-20 w-20 bg-muted/50 rounded border-2 border-dashed border-muted-foreground/20" />
-                        </div>
-                        <div className="h-10 bg-primary/20 rounded flex items-center justify-center">
-                          <div className="h-3 bg-primary rounded w-16" />
-                        </div>
+                  <Card className="bg-card border-border p-6">
+                    <div className="space-y-4">
+                      <div>
+                        <div className="h-3 bg-muted rounded w-24 mb-3" />
+                        <div className="h-10 bg-muted rounded" />
                       </div>
-                    </Card>
-                  </motion.div>
+                      <div>
+                        <div className="h-3 bg-muted rounded w-32 mb-3" />
+                        <div className="h-24 bg-muted rounded" />
+                      </div>
+                      <div className="flex gap-2">
+                        <div className="h-20 w-20 bg-muted rounded" />
+                        <div className="h-20 w-20 bg-muted/50 rounded border-2 border-dashed border-muted-foreground/20" />
+                      </div>
+                      <div className="h-10 bg-primary/20 rounded flex items-center justify-center">
+                        <div className="h-3 bg-primary rounded w-16" />
+                      </div>
+                    </div>
+                  </Card>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Slide 2: Track */}
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
-              <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6">
+              <motion.div 
+                className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                viewport={{ once: false, amount: 0.4 }}
+              >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6">Track.</h2>
                   <p className="text-xl text-gray-400 leading-relaxed">
@@ -258,47 +263,54 @@ const Landing = () => {
                   </p>
                 </div>
                 <div className="relative">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    viewport={{ once: true }}
-                  >
-                    <Card className="bg-card border-border p-6 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="h-4 bg-muted rounded w-32" />
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.5, delay: 0.5 }}
-                          viewport={{ once: true }}
-                        >
-                          <Badge variant="outline" className="gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            In Progress
-                          </Badge>
-                        </motion.div>
-                      </div>
-                      <div className="h-3 bg-muted rounded w-full" />
-                      <div className="h-3 bg-muted rounded w-3/4" />
-                      <div className="border-t border-border pt-4 mt-4">
-                        <div className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/20" />
-                          <div className="flex-1">
-                            <div className="h-3 bg-muted rounded w-24 mb-2" />
-                            <div className="h-2 bg-muted rounded w-full" />
-                          </div>
+                  <Card className="bg-card border-border p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="h-4 bg-muted rounded w-32" />
+                      <Badge variant="outline" className="gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        In Progress
+                      </Badge>
+                    </div>
+                    <div className="h-3 bg-muted rounded w-full" />
+                    <div className="h-3 bg-muted rounded w-3/4" />
+                    <div className="space-y-3 pt-4 border-t border-border">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-success/20" />
+                        <div className="flex-1">
+                          <div className="h-2 bg-muted rounded w-24 mb-2" />
+                          <div className="h-2 bg-muted/60 rounded w-32" />
                         </div>
                       </div>
-                    </Card>
-                  </motion.div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-warning/20" />
+                        <div className="flex-1">
+                          <div className="h-2 bg-muted rounded w-32 mb-2" />
+                          <div className="h-2 bg-muted/60 rounded w-28" />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 opacity-40">
+                        <div className="w-8 h-8 rounded-full bg-muted/20" />
+                        <div className="flex-1">
+                          <div className="h-2 bg-muted rounded w-20 mb-2" />
+                          <div className="h-2 bg-muted/60 rounded w-24" />
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
                 </div>
-              </div>
+              </motion.div>
             </div>
+
 
             {/* Slide 3: Resolve */}
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
-              <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6">
+              <motion.div 
+                className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                viewport={{ once: false, amount: 0.4 }}
+              >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6">Resolve.</h2>
                   <p className="text-xl text-gray-400 leading-relaxed">
@@ -306,47 +318,27 @@ const Landing = () => {
                   </p>
                 </div>
                 <div className="relative">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    viewport={{ once: true }}
-                  >
-                    <Card className="bg-card border-border p-6 space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="h-4 bg-muted rounded w-32" />
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.5, delay: 0.5 }}
-                          viewport={{ once: true }}
-                        >
-                          <Badge className="gap-1 bg-success text-success-foreground">
-                            <CheckCircle2 className="w-3 h-3" />
-                            Resolved
-                          </Badge>
-                        </motion.div>
+                  <Card className="bg-card border-border p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="h-4 bg-muted rounded w-32" />
+                      <Badge className="gap-1 bg-success text-success-foreground">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Resolved
+                      </Badge>
+                    </div>
+                    <div className="h-3 bg-muted rounded w-full" />
+                    <div className="h-3 bg-muted rounded w-3/4" />
+                    <div className="border-t border-border pt-4 mt-4">
+                      <div className="text-sm text-muted-foreground mb-3">Rate this resolution:</div>
+                      <div className="flex gap-2">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-6 h-6 fill-primary text-primary" />
+                        ))}
                       </div>
-                      <div className="h-3 bg-muted rounded w-full" />
-                      <div className="h-3 bg-muted rounded w-3/4" />
-                      <div className="border-t border-border pt-4 mt-4">
-                        <div className="text-sm text-muted-foreground mb-3">Rate this resolution:</div>
-                        <motion.div
-                          className="flex gap-2"
-                          initial={{ opacity: 0 }}
-                          whileInView={{ opacity: 1 }}
-                          transition={{ duration: 0.5, delay: 0.8 }}
-                          viewport={{ once: true }}
-                        >
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} className="w-6 h-6 fill-primary text-primary" />
-                          ))}
-                        </motion.div>
-                      </div>
-                    </Card>
-                  </motion.div>
+                    </div>
+                  </Card>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </motion.div>
         </div>
