@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, MessageSquare, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Star, MessageSquare, AlertCircle, CheckCircle2, Code, Users, UserCheck, Heart, Image } from "lucide-react";
 import logo from "@/assets/brototype-logo.png";
 
 const FadeInSection = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
@@ -44,7 +44,7 @@ const Landing = () => {
   const heroScale = useTransform(heroScrollProgress, [0, 1], [1, 0.9]);
   const heroOpacity = useTransform(heroScrollProgress, [0, 0.5, 1], [1, 0.8, 0.3]);
 
-  const horizontalX = useTransform(horizontalScrollProgress, [0, 1], ["0%", "-200%"]);
+  const horizontalX = useTransform(horizontalScrollProgress, [0, 1], ["0%", "-300%"]);
 
   const handleGetStarted = () => {
     navigate(user ? '/dashboard' : '/auth');
@@ -93,8 +93,11 @@ const Landing = () => {
           <h1 className="text-6xl md:text-8xl font-bold mb-6 tracking-tight">
             Brototype Connect
           </h1>
-          <p className="text-xl md:text-2xl text-gray-400 mb-12 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-gray-400 mb-4 max-w-2xl mx-auto">
             A direct line. A clear voice.
+          </p>
+          <p className="text-lg md:text-xl text-gray-400/80 mb-12 max-w-2xl mx-auto">
+            The official hub for the Brototype Community.
           </p>
           <Button
             size="lg"
@@ -202,7 +205,7 @@ const Landing = () => {
       </section>
 
       {/* Section 3: Horizontal Feature Tour */}
-      <section ref={horizontalRef} className="relative" style={{ height: "300vh" }}>
+      <section ref={horizontalRef} className="relative" style={{ height: "400vh" }}>
         <div className="sticky top-0 h-screen flex items-center overflow-hidden">
           <motion.div 
             className="flex gap-12 px-12"
@@ -340,48 +343,94 @@ const Landing = () => {
                 </div>
               </motion.div>
             </div>
+
+            {/* Slide 4: Connect */}
+            <div className="min-w-[100vw] h-screen flex items-center justify-center">
+              <motion.div 
+                className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                viewport={{ once: false, amount: 0.4 }}
+              >
+                <div>
+                  <h2 className="text-5xl md:text-6xl font-bold mb-6">Connect.</h2>
+                  <p className="text-xl text-gray-400 leading-relaxed">
+                    Join the conversation. Share ideas, ask questions, and connect with the entire Brocamp community.
+                  </p>
+                </div>
+                <div className="relative">
+                  <Card className="bg-card border-border p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Users className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-semibold">Sarah Johnson</span>
+                          <span className="text-xs text-gray-500">@sarah_dev</span>
+                        </div>
+                        <p className="text-sm mb-3">
+                          Hackathon this weekend! Who's in? 🚀
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <button className="flex items-center gap-1 hover:text-red-400 transition-colors">
+                            <Heart className="h-4 w-4" />
+                            <span>24</span>
+                          </button>
+                          <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                            <MessageSquare className="h-4 w-4" />
+                            <span>8</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+              </motion.div>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Section 4: Core Principles */}
+      {/* Section 4: Built for the Brocamp */}
       <section className="min-h-screen flex items-center justify-center px-6 py-20">
         <FadeInSection>
           <div className="max-w-6xl mx-auto">
             <h2 className="text-5xl md:text-6xl font-bold mb-16 text-center">
-              Core Principles
+              More than an app. A Philosophy.
             </h2>
             <div className="grid md:grid-cols-3 gap-8">
-              {/* Transparency */}
+              {/* Practical First */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <AlertCircle className="w-8 h-8 text-primary" />
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Code className="w-10 h-10 text-primary" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-4">Transparency</h3>
+                <h3 className="text-2xl font-semibold mb-4">Practical First</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  See every update in real-time. Know you've been heard. No more shouting into the void.
+                  Brototype is about building real-world solutions. 'Connect' is our own professional tool, built by and for the community to solve our own daily challenges.
                 </p>
               </div>
 
-              {/* Efficiency */}
+              {/* Community-Driven */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle2 className="w-8 h-8 text-primary" />
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Users className="w-10 h-10 text-primary" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-4">Efficiency</h3>
+                <h3 className="text-2xl font-semibold mb-4">Community-Driven</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  From report to resolution. A streamlined process for a high-performance community.
+                  From peer-to-peer learning to collaborative projects, community is everything. This is your central hub to engage, share, and grow together.
                 </p>
               </div>
 
-              {/* Accountability */}
+              {/* Total Ownership */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Star className="w-8 h-8 text-primary" />
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <UserCheck className="w-10 h-10 text-primary" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-4">Accountability</h3>
+                <h3 className="text-2xl font-semibold mb-4">Total Ownership</h3>
                 <p className="text-gray-400 leading-relaxed">
-                  Clear ownership and status tracking. We build on a foundation of trust.
+                  This platform empowers you to take ownership of your environment. Report issues, track solutions, and help us build a better campus.
                 </p>
               </div>
             </div>
@@ -389,7 +438,106 @@ const Landing = () => {
         </FadeInSection>
       </section>
 
-      {/* Section 5: Final CTA */}
+      {/* Section 5: A Living Hub */}
+      <section className="min-h-screen flex items-center justify-center px-6 py-20">
+        <FadeInSection>
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-5xl md:text-7xl font-bold mb-16 text-center">
+              A Living Hub.
+            </h2>
+            <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              {/* Grid Item 1: Community Post */}
+              <Card className="bg-card border-border p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-semibold">Alex Kumar</span>
+                      <span className="text-xs text-gray-500">@alex_codes</span>
+                    </div>
+                    <p className="text-sm mb-3">
+                      Just launched my first React project! Thanks to @mentor for the help! #brototype #react
+                    </p>
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <button className="flex items-center gap-1 hover:text-red-400 transition-colors">
+                        <Heart className="h-4 w-4" />
+                        <span>42</span>
+                      </button>
+                      <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                        <MessageSquare className="h-4 w-4" />
+                        <span>12</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Grid Item 2: Resolved Complaint */}
+              <Card className="bg-card border-border p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="h-5 w-5 text-success" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-semibold">WiFi in Lab 3 is down</span>
+                      <Badge className="bg-success text-success-foreground">Resolved</Badge>
+                    </div>
+                    <p className="text-sm text-gray-400 mb-3">
+                      IT team replaced the faulty router. WiFi is now operational.
+                    </p>
+                    <div className="text-xs text-gray-500">
+                      Resolved 2 hours ago
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Grid Item 3: Community Image */}
+              <Card className="bg-card border-border p-6">
+                <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-3">
+                  <Image className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-gray-400 text-center">
+                  The Brocamp in action.
+                </p>
+              </Card>
+
+              {/* Grid Item 4: Community Post */}
+              <Card className="bg-card border-border p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-semibold">Maria Santos</span>
+                      <span className="text-xs text-gray-500">@maria_ui</span>
+                    </div>
+                    <p className="text-sm mb-3">
+                      What's everyone's favorite VS Code theme for dark mode? Need ideas.
+                    </p>
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <button className="flex items-center gap-1 hover:text-red-400 transition-colors">
+                        <Heart className="h-4 w-4" />
+                        <span>18</span>
+                      </button>
+                      <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                        <MessageSquare className="h-4 w-4" />
+                        <span>15</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </FadeInSection>
+      </section>
+
+      {/* Section 6: Final CTA */}
       <section className="min-h-screen flex items-center justify-center px-6 py-20">
         <FadeInSection delay={0.2}>
           <div className="text-center">
