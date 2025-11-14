@@ -156,4 +156,48 @@ All colors MUST be HSL.
   .hover-highlight {
     @apply transition-smooth hover:bg-accent/30;
   }
+
+  /* Animated gradient text */
+  .gradient-text {
+    background: linear-gradient(
+      to right,
+      hsl(var(--primary)),
+      hsl(var(--muted-foreground)),
+      hsl(var(--primary))
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-text-hover {
+    background: linear-gradient(
+      to right,
+      hsl(var(--primary)),
+      hsl(var(--muted-foreground)),
+      hsl(var(--primary))
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: all 0.3s ease;
+  }
+
+  .gradient-text-hover:hover {
+    animation: gradient-shift 2s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 }

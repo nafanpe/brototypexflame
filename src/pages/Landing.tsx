@@ -9,6 +9,7 @@ import { Star, MessageSquare, AlertCircle, CheckCircle2, Code, Users, UserCheck,
 import logo from "@/assets/brototype-logo.png";
 import { CustomCursor } from "@/components/CustomCursor";
 import { BackToTopButton } from "@/components/BackToTopButton";
+import { StickyNav } from "@/components/StickyNav";
 
 const FadeInSection = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
   const ref = useRef(null);
@@ -99,6 +100,9 @@ const Landing = () => {
         className="fixed top-0 left-0 right-0 h-1 bg-primary z-50 origin-left"
         style={{ scaleX: scrollYProgress }}
       />
+      
+      {/* Sticky Navigation */}
+      <StickyNav onGetStarted={handleGetStarted} />
 
       {/* Section 1: The Hero with 3D Perspective */}
       <motion.section 
@@ -141,7 +145,7 @@ const Landing = () => {
           className="text-center z-10"
         >
           <img src={logo} alt="Brototype Logo" className="w-24 h-24 mx-auto mb-8 opacity-90" />
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 tracking-tight">
+          <h1 className="text-6xl md:text-8xl font-bold mb-6 tracking-tight gradient-text-hover">
             Brototype Connect
           </h1>
           <p className="text-xl md:text-2xl text-gray-400 mb-4 max-w-2xl mx-auto">
@@ -153,7 +157,7 @@ const Landing = () => {
           <Button
             size="lg"
             onClick={handleGetStarted}
-            className="rounded-full px-8 py-6 text-lg font-semibold"
+            className="rounded-full px-8 py-6 text-lg font-semibold gradient-text-hover"
           >
             Get Started
           </Button>
@@ -243,7 +247,7 @@ const Landing = () => {
 
             {/* Text Content */}
             <div className="text-center">
-              <h2 className="text-5xl md:text-7xl font-bold mb-8">
+              <h2 className="text-5xl md:text-7xl font-bold mb-8 gradient-text-hover">
                 Move past the noise.
               </h2>
               <p className="text-lg md:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto">
@@ -272,7 +276,7 @@ const Landing = () => {
                 viewport={{ once: false, amount: 0.4 }}
               >
                 <div>
-                  <h2 className="text-5xl md:text-6xl font-bold mb-6">Submit.</h2>
+                  <h2 className="text-5xl md:text-6xl font-bold mb-6 gradient-text-hover">Submit.</h2>
                   <p className="text-xl text-gray-400 leading-relaxed">
                     Submit with detail. Attach images, set urgency, and send.
                   </p>
@@ -311,7 +315,7 @@ const Landing = () => {
                 viewport={{ once: false, amount: 0.4 }}
               >
                 <div>
-                  <h2 className="text-5xl md:text-6xl font-bold mb-6">Track.</h2>
+                  <h2 className="text-5xl md:text-6xl font-bold mb-6 gradient-text-hover">Track.</h2>
                   <p className="text-xl text-gray-400 leading-relaxed">
                     Track in real-time. No more guessing. See exactly when your issue is being handled.
                   </p>
@@ -366,7 +370,7 @@ const Landing = () => {
                 viewport={{ once: false, amount: 0.4 }}
               >
                 <div>
-                  <h2 className="text-5xl md:text-6xl font-bold mb-6">Resolve.</h2>
+                  <h2 className="text-5xl md:text-6xl font-bold mb-6 gradient-text-hover">Resolve.</h2>
                   <p className="text-xl text-gray-400 leading-relaxed">
                     Rate the resolution. Provide feedback to ensure quality and accountability.
                   </p>
@@ -405,7 +409,7 @@ const Landing = () => {
                 viewport={{ once: false, amount: 0.4 }}
               >
                 <div>
-                  <h2 className="text-5xl md:text-6xl font-bold mb-6">Connect.</h2>
+                  <h2 className="text-5xl md:text-6xl font-bold mb-6 gradient-text-hover">Connect.</h2>
                   <p className="text-xl text-gray-400 leading-relaxed">
                     Join the conversation. Share ideas, ask questions, and connect with the entire Brocamp community.
                   </p>
@@ -448,7 +452,7 @@ const Landing = () => {
       <section className="min-h-screen flex items-center justify-center px-6 py-20 md:-mt-[100vh]">
         <FadeInSection>
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-5xl md:text-6xl font-bold mb-16 text-center">
+            <h2 className="text-5xl md:text-6xl font-bold mb-16 text-center gradient-text-hover">
               More than an app. A Philosophy.
             </h2>
             <div className="grid md:grid-cols-3 gap-8">
@@ -493,7 +497,7 @@ const Landing = () => {
       <section className="min-h-screen flex items-center justify-center px-6 py-20">
         <FadeInSection>
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-5xl md:text-7xl font-bold mb-16 text-center">
+            <h2 className="text-5xl md:text-7xl font-bold mb-16 text-center gradient-text-hover">
               A Living Hub.
             </h2>
             <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -635,7 +639,7 @@ const Landing = () => {
       <section className="min-h-screen flex items-center justify-center px-6 py-20">
         <FadeInSection delay={0.2}>
           <div className="text-center">
-            <h2 className="text-5xl md:text-7xl font-bold mb-8">
+            <h2 className="text-5xl md:text-7xl font-bold mb-8 gradient-text-hover">
               Join Connect.
             </h2>
             <p className="text-lg md:text-xl text-gray-400 mb-12">
@@ -644,7 +648,7 @@ const Landing = () => {
             <Button
               size="lg"
               onClick={handleGetStarted}
-              className="rounded-full px-8 py-6 text-lg font-semibold"
+              className="rounded-full px-8 py-6 text-lg font-semibold gradient-text-hover"
             >
               Get Started
             </Button>
