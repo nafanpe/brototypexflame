@@ -177,7 +177,10 @@ export default function ComplaintDetail() {
   };
 
   const handleDeleteComplaint = async () => {
-    if (!user || !complaint || complaint.user_id !== user.id) return;
+    if (!user || !complaint) return;
+    
+    // Allow deletion if user is the owner OR if user is admin
+    if (complaint.user_id !== user.id && !isAdmin) return;
 
     setDeleting(true);
     try {
@@ -190,7 +193,7 @@ export default function ComplaintDetail() {
 
       toast({
         title: 'Complaint Deleted',
-        description: 'Your complaint has been deleted successfully',
+        description: 'Complaint has been deleted successfully',
       });
       navigate('/dashboard');
     } catch (error: any) {
@@ -461,7 +464,7 @@ export default function ComplaintDetail() {
               </div>
             </div>
 
-            {user && complaint && user.id === complaint.user_id && (
+            {user && complaint && (user.id === complaint.user_id || isAdmin) && (
               <div className="pt-4 border-t">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -474,7 +477,7 @@ export default function ComplaintDetail() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete your
+                        This action cannot be undone. This will permanently delete this
                         complaint and all associated comments and images.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
