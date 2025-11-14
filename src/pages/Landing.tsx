@@ -157,7 +157,7 @@ const Landing = () => {
           <Button
             size="lg"
             onClick={handleGetStarted}
-            className="rounded-full px-8 py-6 text-lg font-semibold gradient-text-hover"
+            className="rounded-full px-8 py-6 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
           >
             Get Started
           </Button>
