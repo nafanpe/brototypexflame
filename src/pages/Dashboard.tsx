@@ -173,12 +173,12 @@ export default function Dashboard() {
       });
 
       const categoryColors: Record<string, string> = {
-        facilities: 'hsl(var(--chart-1))',
-        technical: 'hsl(var(--chart-2))',
-        academic: 'hsl(var(--chart-3))',
-        food: 'hsl(var(--chart-4))',
-        transport: 'hsl(var(--chart-5))',
-        other: 'hsl(var(--muted-foreground))'
+        facilities: '#8b5cf6',
+        technical: '#3b82f6',
+        academic: '#10b981',
+        food: '#f59e0b',
+        transport: '#ef4444',
+        other: '#6b7280'
       };
 
       const catData: CategoryData[] = Array.from(categoryMap.entries()).map(([category, count]) => ({
@@ -374,14 +374,14 @@ export default function Dashboard() {
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 animate-fade-in">
           <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Complaints</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.total}</div>
+            <CardContent className="pt-0">
+              <div className="text-2xl font-bold">{stats.total}</div>
               <p className="text-xs text-muted-foreground mt-1">All time submissions</p>
             </CardContent>
           </Card>
@@ -391,8 +391,8 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium">Active Complaints</CardTitle>
               <AlertCircle className="h-4 w-4 text-warning" />
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.active}</div>
+            <CardContent className="pt-0">
+              <div className="text-2xl font-bold">{stats.active}</div>
               <p className="text-xs text-muted-foreground mt-1">Pending resolution</p>
             </CardContent>
           </Card>
@@ -402,33 +402,22 @@ export default function Dashboard() {
               <CardTitle className="text-sm font-medium">Resolved</CardTitle>
               <CheckCircle2 className="h-4 w-4 text-success" />
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.resolved}</div>
+            <CardContent className="pt-0">
+              <div className="text-2xl font-bold">{stats.resolved}</div>
               <p className="text-xs text-muted-foreground mt-1">Successfully closed</p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Avg. Resolution Time</CardTitle>
-              <Timer className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stats.avgResolutionTime.toFixed(1)}</div>
-              <p className="text-xs text-muted-foreground mt-1">Average time to close (days)</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 animate-fade-in">
           {/* Donut Chart - Complaints by Category */}
           <Card className="shadow-card hover:shadow-card-hover transition-smooth">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">Top Problem Areas</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">Top Problem Areas</CardTitle>
               <p className="text-xs text-muted-foreground">Complaints by Category</p>
             </CardHeader>
-            <CardContent className="pb-4">
+            <CardContent className="pb-2">
               {categoryData.length > 0 ? (
                 <ChartContainer
                   config={{
@@ -439,7 +428,7 @@ export default function Dashboard() {
                     transport: { label: 'Transport', color: 'hsl(var(--chart-5))' },
                     other: { label: 'Other', color: 'hsl(var(--muted-foreground))' }
                   }}
-                  className="h-[200px]"
+                  className="h-[160px]"
                 >
                   <PieChart>
                     <Pie
@@ -448,20 +437,20 @@ export default function Dashboard() {
                       nameKey="category"
                       cx="50%"
                       cy="50%"
-                      innerRadius={45}
-                      outerRadius={75}
+                      innerRadius={35}
+                      outerRadius={60}
                       paddingAngle={2}
+                      label
                     >
                       {categoryData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Legend />
                   </PieChart>
                 </ChartContainer>
               ) : (
-                <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
+                <div className="h-[160px] flex items-center justify-center text-sm text-muted-foreground">
                   No data available
                 </div>
               )}
@@ -470,11 +459,11 @@ export default function Dashboard() {
 
           {/* Bar Chart - Active Complaints by Urgency */}
           <Card className="shadow-card hover:shadow-card-hover transition-smooth">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-semibold">Immediate Triage</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">Immediate Triage</CardTitle>
               <p className="text-xs text-muted-foreground">Active Complaints by Urgency</p>
             </CardHeader>
-            <CardContent className="pb-4">
+            <CardContent className="pb-2">
               {urgencyData.some(d => d.count > 0) ? (
                 <ChartContainer
                   config={{
@@ -483,7 +472,7 @@ export default function Dashboard() {
                     medium: { label: 'Medium', color: 'hsl(47.9 95.8% 53.1%)' },
                     low: { label: 'Low', color: 'hsl(var(--muted-foreground))' }
                   }}
-                  className="h-[200px]"
+                  className="h-[160px]"
                 >
                   <BarChart data={urgencyData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -498,7 +487,7 @@ export default function Dashboard() {
                   </BarChart>
                 </ChartContainer>
               ) : (
-                <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
+                <div className="h-[160px] flex items-center justify-center text-sm text-muted-foreground">
                   No active complaints
                 </div>
               )}
