@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, MessageSquare, AlertCircle, CheckCircle2, Code, Users, UserCheck, Heart, Image } from "lucide-react";
 import logo from "@/assets/brototype-logo.png";
+import { CustomCursor } from "@/components/CustomCursor";
+import { BackToTopButton } from "@/components/BackToTopButton";
 
 const FadeInSection = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
   const ref = useRef(null);
@@ -47,6 +49,9 @@ const Landing = () => {
   const heroRotateX = useTransform(heroScrollProgress, [0, 1], [0, 15]);
   const heroScale = useTransform(heroScrollProgress, [0, 1], [1, 0.9]);
   const heroOpacity = useTransform(heroScrollProgress, [0, 0.5, 1], [1, 0.8, 0.3]);
+  
+  // Hero parallax effect - background moves slower than content
+  const heroBackgroundY = useTransform(heroScrollProgress, [0, 1], [0, -200]);
 
   const horizontalX = useTransform(horizontalScrollProgress, [0, 1], ["0%", "-300%"]);
 
@@ -106,8 +111,11 @@ const Landing = () => {
           transformStyle: "preserve-3d",
         }}
       >
-        {/* Subtle background animation */}
-        <div className="absolute inset-0 overflow-hidden opacity-20">
+        {/* Subtle background animation with parallax */}
+        <motion.div 
+          className="absolute inset-0 overflow-hidden opacity-20"
+          style={{ y: heroBackgroundY }}
+        >
           <motion.div
             className="absolute inset-0"
             animate={{
@@ -124,7 +132,7 @@ const Landing = () => {
               backgroundSize: "50px 50px",
             }}
           />
-        </div>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -646,6 +654,12 @@ const Landing = () => {
 
       {/* Fade to black at bottom */}
       <div className="h-32 bg-gradient-to-b from-transparent to-black" />
+      
+      {/* Custom Cursor */}
+      <CustomCursor />
+      
+      {/* Back to Top Button */}
+      <BackToTopButton />
     </div>
   );
 };
