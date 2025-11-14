@@ -197,9 +197,9 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     <div className="border-b border-border dark:border-gray-800 p-4 hover:bg-accent/50 dark:hover:bg-gray-900/50 transition-colors bg-card dark:bg-black">
       <div className="flex gap-3">
         <Avatar className="h-10 w-10">
-          <AvatarImage src={post.profiles.avatar_url || ''} />
+          <AvatarImage src={post.profiles?.avatar_url || ''} />
           <AvatarFallback className="bg-primary text-primary-foreground">
-            {post.profiles.full_name.charAt(0)}
+            {post.profiles?.full_name?.charAt(0) || 'U'}
           </AvatarFallback>
         </Avatar>
         
@@ -208,7 +208,7 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             <div>
               <UserBadge 
                 userId={post.user_id} 
-                userName={post.profiles.full_name}
+                userName={post.profiles?.full_name || 'Unknown User'}
                 className="text-foreground dark:text-white"
               />
               <p className="text-xs text-muted-foreground dark:text-gray-500">
@@ -261,15 +261,15 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                 <div className="mt-6 pb-4 border-b border-border dark:border-gray-800">
                   <div className="flex gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={post.profiles.avatar_url || ''} />
+                      <AvatarImage src={post.profiles?.avatar_url || ''} />
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {post.profiles.full_name.charAt(0)}
+                        {post.profiles?.full_name?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
                       <UserBadge 
                         userId={post.user_id} 
-                        userName={post.profiles.full_name}
+                        userName={post.profiles?.full_name || 'Unknown User'}
                         className="text-foreground dark:text-white"
                       />
                       {post.text_content && (
@@ -316,14 +316,14 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                     {comments.map((comment) => (
                       <div key={comment.id} className="flex gap-3">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={comment.profiles.avatar_url || ''} />
+                          <AvatarImage src={comment.profiles?.avatar_url || ''} />
                           <AvatarFallback className="bg-muted dark:bg-gray-800 text-muted-foreground dark:text-white">
-                            {comment.profiles.full_name.charAt(0)}
+                            {comment.profiles?.full_name?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="bg-muted dark:bg-gray-900 rounded-lg p-3">
-                            <p className="font-semibold text-sm text-foreground dark:text-white">{comment.profiles.full_name}</p>
+                            <p className="font-semibold text-sm text-foreground dark:text-white">{comment.profiles?.full_name || 'Unknown User'}</p>
                             <p className="text-sm text-foreground dark:text-white mt-1">{comment.text_content}</p>
                           </div>
                           <p className="text-xs text-muted-foreground dark:text-gray-500 mt-1 ml-3">
