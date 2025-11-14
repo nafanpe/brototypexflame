@@ -376,35 +376,35 @@ export default function Dashboard() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 animate-fade-in">
           <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-1">
               <CardTitle className="text-sm font-medium">Total Complaints</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 pb-3">
               <div className="text-2xl font-bold">{stats.total}</div>
-              <p className="text-xs text-muted-foreground mt-1">All time submissions</p>
+              <p className="text-xs text-muted-foreground">All time submissions</p>
             </CardContent>
           </Card>
 
           <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-1">
               <CardTitle className="text-sm font-medium">Active Complaints</CardTitle>
               <AlertCircle className="h-4 w-4 text-warning" />
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 pb-3">
               <div className="text-2xl font-bold">{stats.active}</div>
-              <p className="text-xs text-muted-foreground mt-1">Pending resolution</p>
+              <p className="text-xs text-muted-foreground">Pending resolution</p>
             </CardContent>
           </Card>
 
           <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-1">
               <CardTitle className="text-sm font-medium">Resolved</CardTitle>
               <CheckCircle2 className="h-4 w-4 text-success" />
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 pb-3">
               <div className="text-2xl font-bold">{stats.resolved}</div>
-              <p className="text-xs text-muted-foreground mt-1">Successfully closed</p>
+              <p className="text-xs text-muted-foreground">Successfully closed</p>
             </CardContent>
           </Card>
         </div>
@@ -419,38 +419,47 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="pb-2">
               {categoryData.length > 0 ? (
-                <ChartContainer
-                  config={{
-                    facilities: { label: 'Facilities', color: 'hsl(var(--chart-1))' },
-                    technical: { label: 'Technical', color: 'hsl(var(--chart-2))' },
-                    academic: { label: 'Academic', color: 'hsl(var(--chart-3))' },
-                    food: { label: 'Food', color: 'hsl(var(--chart-4))' },
-                    transport: { label: 'Transport', color: 'hsl(var(--chart-5))' },
-                    other: { label: 'Other', color: 'hsl(var(--muted-foreground))' }
-                  }}
-                  className="h-[160px]"
-                >
-                  <PieChart>
-                    <Pie
-                      data={categoryData}
-                      dataKey="count"
-                      nameKey="category"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={35}
-                      outerRadius={60}
-                      paddingAngle={2}
-                      label
-                    >
-                      {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                  </PieChart>
-                </ChartContainer>
+                <>
+                  <ChartContainer
+                    config={{
+                      facilities: { label: 'Facilities', color: '#8b5cf6' },
+                      technical: { label: 'Technical', color: '#3b82f6' },
+                      academic: { label: 'Academic', color: '#10b981' },
+                      food: { label: 'Food', color: '#f59e0b' },
+                      transport: { label: 'Transport', color: '#ef4444' },
+                      other: { label: 'Other', color: '#6b7280' }
+                    }}
+                    className="h-[140px]"
+                  >
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        dataKey="count"
+                        nameKey="category"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={30}
+                        outerRadius={55}
+                        paddingAngle={2}
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                    </PieChart>
+                  </ChartContainer>
+                  <div className="flex flex-wrap gap-3 mt-2 justify-center">
+                    {categoryData.map((entry, index) => (
+                      <div key={index} className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.fill }} />
+                        <span className="text-xs text-foreground">{entry.category}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : (
-                <div className="h-[160px] flex items-center justify-center text-sm text-muted-foreground">
+                <div className="h-[140px] flex items-center justify-center text-sm text-muted-foreground">
                   No data available
                 </div>
               )}
@@ -472,12 +481,12 @@ export default function Dashboard() {
                     medium: { label: 'Medium', color: 'hsl(47.9 95.8% 53.1%)' },
                     low: { label: 'Low', color: 'hsl(var(--muted-foreground))' }
                   }}
-                  className="h-[160px]"
+                  className="h-[140px]"
                 >
                   <BarChart data={urgencyData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="urgency" />
-                    <YAxis />
+                    <XAxis dataKey="urgency" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="count" radius={[8, 8, 0, 0]}>
                       {urgencyData.map((entry, index) => (
@@ -487,7 +496,7 @@ export default function Dashboard() {
                   </BarChart>
                 </ChartContainer>
               ) : (
-                <div className="h-[160px] flex items-center justify-center text-sm text-muted-foreground">
+                <div className="h-[140px] flex items-center justify-center text-sm text-muted-foreground">
                   No active complaints
                 </div>
               )}
