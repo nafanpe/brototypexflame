@@ -409,100 +409,102 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 animate-fade-in">
-          {/* Donut Chart - Complaints by Category */}
-          <Card className="shadow-card hover:shadow-card-hover transition-smooth">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Top Problem Areas</CardTitle>
-              <p className="text-xs text-muted-foreground">Complaints by Category</p>
-            </CardHeader>
-            <CardContent className="pb-2">
-              {categoryData.length > 0 ? (
-                <>
+        {/* Charts Section - Only visible to Admins and Staff */}
+        {(userRole === 'admin' || userRole === 'staff') && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 animate-fade-in">
+            {/* Donut Chart - Complaints by Category */}
+            <Card className="shadow-card hover:shadow-card-hover transition-smooth">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold">Top Problem Areas</CardTitle>
+                <p className="text-xs text-muted-foreground">Complaints by Category</p>
+              </CardHeader>
+              <CardContent className="pb-2">
+                {categoryData.length > 0 ? (
+                  <>
+                    <ChartContainer
+                      config={{
+                        facilities: { label: 'Facilities', color: '#8b5cf6' },
+                        technical: { label: 'Technical', color: '#3b82f6' },
+                        academic: { label: 'Academic', color: '#10b981' },
+                        food: { label: 'Food', color: '#f59e0b' },
+                        transport: { label: 'Transport', color: '#ef4444' },
+                        other: { label: 'Other', color: '#6b7280' }
+                      }}
+                      className="h-[140px]"
+                    >
+                      <PieChart>
+                        <Pie
+                          data={categoryData}
+                          dataKey="count"
+                          nameKey="category"
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={30}
+                          outerRadius={55}
+                          paddingAngle={2}
+                        >
+                          {categoryData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                      </PieChart>
+                    </ChartContainer>
+                    <div className="flex flex-wrap gap-3 mt-2 justify-center">
+                      {categoryData.map((entry, index) => (
+                        <div key={index} className="flex items-center gap-1.5">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.fill }} />
+                          <span className="text-xs text-foreground">{entry.category}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-[140px] flex items-center justify-center text-sm text-muted-foreground">
+                    No data available
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Bar Chart - Active Complaints by Urgency */}
+            <Card className="shadow-card hover:shadow-card-hover transition-smooth">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold">Immediate Triage</CardTitle>
+                <p className="text-xs text-muted-foreground">Active Complaints by Urgency</p>
+              </CardHeader>
+              <CardContent className="pb-2">
+                {urgencyData.some(d => d.count > 0) ? (
                   <ChartContainer
                     config={{
-                      facilities: { label: 'Facilities', color: '#8b5cf6' },
-                      technical: { label: 'Technical', color: '#3b82f6' },
-                      academic: { label: 'Academic', color: '#10b981' },
-                      food: { label: 'Food', color: '#f59e0b' },
-                      transport: { label: 'Transport', color: '#ef4444' },
-                      other: { label: 'Other', color: '#6b7280' }
+                      critical: { label: 'Critical', color: 'hsl(0 84.2% 60.2%)' },
+                      high: { label: 'High', color: 'hsl(24.6 95% 53.1%)' },
+                      medium: { label: 'Medium', color: 'hsl(47.9 95.8% 53.1%)' },
+                      low: { label: 'Low', color: 'hsl(var(--muted-foreground))' }
                     }}
                     className="h-[140px]"
                   >
-                    <PieChart>
-                      <Pie
-                        data={categoryData}
-                        dataKey="count"
-                        nameKey="category"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={30}
-                        outerRadius={55}
-                        paddingAngle={2}
-                      >
-                        {categoryData.map((entry, index) => (
+                    <BarChart data={urgencyData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="urgency" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                        {urgencyData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                    </PieChart>
+                      </Bar>
+                    </BarChart>
                   </ChartContainer>
-                  <div className="flex flex-wrap gap-3 mt-2 justify-center">
-                    {categoryData.map((entry, index) => (
-                      <div key={index} className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.fill }} />
-                        <span className="text-xs text-foreground">{entry.category}</span>
-                      </div>
-                    ))}
+                ) : (
+                  <div className="h-[140px] flex items-center justify-center text-sm text-muted-foreground">
+                    No active complaints
                   </div>
-                </>
-              ) : (
-                <div className="h-[140px] flex items-center justify-center text-sm text-muted-foreground">
-                  No data available
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Bar Chart - Active Complaints by Urgency */}
-          <Card className="shadow-card hover:shadow-card-hover transition-smooth">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Immediate Triage</CardTitle>
-              <p className="text-xs text-muted-foreground">Active Complaints by Urgency</p>
-            </CardHeader>
-            <CardContent className="pb-2">
-              {urgencyData.some(d => d.count > 0) ? (
-                <ChartContainer
-                  config={{
-                    critical: { label: 'Critical', color: 'hsl(0 84.2% 60.2%)' },
-                    high: { label: 'High', color: 'hsl(24.6 95% 53.1%)' },
-                    medium: { label: 'Medium', color: 'hsl(47.9 95.8% 53.1%)' },
-                    low: { label: 'Low', color: 'hsl(var(--muted-foreground))' }
-                  }}
-                  className="h-[140px]"
-                >
-                  <BarChart data={urgencyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="urgency" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                      {urgencyData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ChartContainer>
-              ) : (
-                <div className="h-[140px] flex items-center justify-center text-sm text-muted-foreground">
-                  No active complaints
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Action Bar - Search, Filters, View Toggle, and New Complaint */}
         <div className="flex flex-col md:flex-row gap-4 mb-6 items-stretch md:items-center">
