@@ -24,44 +24,11 @@ const FadeInSection = ({ children, delay = 0 }: { children: React.ReactNode; del
   );
 };
 
-const StaggeredTextSection = ({ children }: { children: React.ReactNode }) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
-
-  return (
-    <motion.div
-      ref={ref}
-      variants={container}
-      initial="hidden"
-      animate={isInView ? "show" : "hidden"}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
 const Landing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const heroRef = useRef(null);
   const horizontalRef = useRef(null);
-  const pageRef = useRef(null);
 
   const { scrollYProgress: heroScrollProgress } = useScroll({
     target: heroRef,
@@ -73,109 +40,18 @@ const Landing = () => {
     offset: ["start start", "end end"]
   });
 
-  const { scrollYProgress: pageScrollProgress } = useScroll({
-    target: pageRef,
-    offset: ["start start", "end end"]
-  });
-
   const heroRotateX = useTransform(heroScrollProgress, [0, 1], [0, 15]);
   const heroScale = useTransform(heroScrollProgress, [0, 1], [1, 0.9]);
   const heroOpacity = useTransform(heroScrollProgress, [0, 0.5, 1], [1, 0.8, 0.3]);
 
   const horizontalX = useTransform(horizontalScrollProgress, [0, 1], ["0%", "-300%"]);
 
-  // SVG Path Animation
-  const pathLength = useTransform(pageScrollProgress, [0, 1], [0, 1]);
-
-  // Multi-layer Parallax
-  const parallaxY1 = useTransform(pageScrollProgress, [0, 1], ["0%", "10%"]);
-  const parallaxY2 = useTransform(pageScrollProgress, [0, 1], ["0%", "20%"]);
-  const parallaxY3 = useTransform(pageScrollProgress, [0, 1], ["0%", "30%"]);
-
   const handleGetStarted = () => {
     navigate(user ? '/dashboard' : '/auth');
   };
 
   return (
-    <div ref={pageRef} className="bg-black text-white relative" style={{ perspective: "1200px" }}>
-      {/* Multi-Layer Parallax Background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {/* Layer 1: Dot Pattern */}
-        <motion.div
-          className="absolute inset-0 opacity-20"
-          style={{ y: parallaxY1 }}
-        >
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: "radial-gradient(circle at center, hsl(var(--primary)) 1px, transparent 1px)",
-              backgroundSize: "50px 50px",
-            }}
-          />
-        </motion.div>
-
-        {/* Layer 2: Blurred Circles */}
-        <motion.div
-          className="absolute inset-0 opacity-10"
-          style={{ y: parallaxY2 }}
-        >
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute rounded-full bg-primary/30 blur-3xl"
-              style={{
-                width: `${200 + i * 50}px`,
-                height: `${200 + i * 50}px`,
-                left: `${i * 20}%`,
-                top: `${i * 15}%`,
-              }}
-            />
-          ))}
-        </motion.div>
-
-        {/* Layer 3: Star Glints */}
-        <motion.div
-          className="absolute inset-0 opacity-30"
-          style={{ y: parallaxY3 }}
-        >
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-white rounded-full"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-              }}
-              animate={{
-                opacity: [0.2, 1, 0.2],
-                scale: [1, 1.5, 1],
-              }}
-              transition={{
-                duration: 2 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-              }}
-            />
-          ))}
-        </motion.div>
-      </div>
-
-      {/* SVG Path Connector */}
-      <svg
-        className="fixed left-8 top-0 h-full w-32 pointer-events-none z-50 hidden lg:block"
-        style={{ opacity: 0.6 }}
-      >
-        <motion.path
-          d="M 30 100 L 30 95vh"
-          stroke="hsl(var(--primary))"
-          strokeWidth="2"
-          fill="none"
-          style={{
-            pathLength,
-          }}
-        />
-      </svg>
-
+    <div className="bg-black text-white" style={{ perspective: "1200px" }}>
       {/* Section 1: The Hero with 3D Perspective */}
       <motion.section 
         ref={heroRef}
@@ -350,12 +226,7 @@ const Landing = () => {
                     Submit with detail. Attach images, set urgency, and send.
                   </p>
                 </div>
-                <motion.div 
-                  className="relative"
-                  whileHover={{ scale: 1.05, rotateX: 10, rotateY: -10 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ transformStyle: "preserve-3d" }}
-                >
+                <div className="relative">
                   <Card className="bg-card border-border p-6">
                     <div className="space-y-4">
                       <div>
@@ -375,7 +246,7 @@ const Landing = () => {
                       </div>
                     </div>
                   </Card>
-                </motion.div>
+                </div>
               </motion.div>
             </div>
 
@@ -394,12 +265,7 @@ const Landing = () => {
                     Track in real-time. No more guessing. See exactly when your issue is being handled.
                   </p>
                 </div>
-                <motion.div 
-                  className="relative"
-                  whileHover={{ scale: 1.05, rotateX: 10, rotateY: -10 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ transformStyle: "preserve-3d" }}
-                >
+                <div className="relative">
                   <Card className="bg-card border-border p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="h-4 bg-muted rounded w-32" />
@@ -434,7 +300,7 @@ const Landing = () => {
                       </div>
                     </div>
                   </Card>
-                </motion.div>
+                </div>
               </motion.div>
             </div>
 
@@ -454,12 +320,7 @@ const Landing = () => {
                     Rate the resolution. Provide feedback to ensure quality and accountability.
                   </p>
                 </div>
-                <motion.div 
-                  className="relative"
-                  whileHover={{ scale: 1.05, rotateX: 10, rotateY: -10 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ transformStyle: "preserve-3d" }}
-                >
+                <div className="relative">
                   <Card className="bg-card border-border p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="h-4 bg-muted rounded w-32" />
@@ -479,7 +340,7 @@ const Landing = () => {
                       </div>
                     </div>
                   </Card>
-                </motion.div>
+                </div>
               </motion.div>
             </div>
 
@@ -498,12 +359,7 @@ const Landing = () => {
                     Join the conversation. Share ideas, ask questions, and connect with the entire Brocamp community.
                   </p>
                 </div>
-                <motion.div 
-                  className="relative"
-                  whileHover={{ scale: 1.05, rotateX: 10, rotateY: -10 }}
-                  transition={{ duration: 0.3 }}
-                  style={{ transformStyle: "preserve-3d" }}
-                >
+                <div className="relative">
                   <Card className="bg-card border-border p-6">
                     <div className="flex items-start gap-4">
                       <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -530,7 +386,7 @@ const Landing = () => {
                       </div>
                     </div>
                   </Card>
-                </motion.div>
+                </div>
               </motion.div>
             </div>
           </motion.div>
@@ -538,90 +394,48 @@ const Landing = () => {
       </section>
 
       {/* Section 4: Built for the Brocamp */}
-      <section className="min-h-screen flex items-center justify-center px-6 py-20 md:-mt-[100vh]">
-        <StaggeredTextSection>
+      <section className="min-h-screen flex items-center justify-center px-6 py-20">
+        <FadeInSection>
           <div className="max-w-6xl mx-auto">
-            <motion.h2 
-              className="text-5xl md:text-6xl font-bold mb-16 text-center"
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                show: { opacity: 1, y: 0 }
-              }}
-            >
+            <h2 className="text-5xl md:text-6xl font-bold mb-16 text-center">
               More than an app. A Philosophy.
-            </motion.h2>
+            </h2>
             <div className="grid md:grid-cols-3 gap-8">
               {/* Practical First */}
-              <motion.div 
-                className="text-center"
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  show: { opacity: 1, y: 0 }
-                }}
-              >
+              <div className="text-center">
                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Code className="w-10 h-10 text-primary" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Practical First</h3>
-                <motion.p 
-                  className="text-gray-400 leading-relaxed"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    show: { opacity: 1 }
-                  }}
-                >
+                <p className="text-gray-400 leading-relaxed">
                   Brototype is about building real-world solutions. 'Connect' is our own professional tool, built by and for the community to solve our own daily challenges.
-                </motion.p>
-              </motion.div>
+                </p>
+              </div>
 
               {/* Community-Driven */}
-              <motion.div 
-                className="text-center"
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  show: { opacity: 1, y: 0 }
-                }}
-              >
+              <div className="text-center">
                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Users className="w-10 h-10 text-primary" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Community-Driven</h3>
-                <motion.p 
-                  className="text-gray-400 leading-relaxed"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    show: { opacity: 1 }
-                  }}
-                >
+                <p className="text-gray-400 leading-relaxed">
                   From peer-to-peer learning to collaborative projects, community is everything. This is your central hub to engage, share, and grow together.
-                </motion.p>
-              </motion.div>
+                </p>
+              </div>
 
               {/* Total Ownership */}
-              <motion.div 
-                className="text-center"
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  show: { opacity: 1, y: 0 }
-                }}
-              >
+              <div className="text-center">
                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                   <UserCheck className="w-10 h-10 text-primary" />
                 </div>
                 <h3 className="text-2xl font-semibold mb-4">Total Ownership</h3>
-                <motion.p 
-                  className="text-gray-400 leading-relaxed"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    show: { opacity: 1 }
-                  }}
-                >
+                <p className="text-gray-400 leading-relaxed">
                   This platform empowers you to take ownership of your environment. Report issues, track solutions, and help us build a better campus.
-                </motion.p>
-              </motion.div>
+                </p>
+              </div>
             </div>
           </div>
-        </StaggeredTextSection>
+        </FadeInSection>
       </section>
 
       {/* Section 5: A Living Hub */}
