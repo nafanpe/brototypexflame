@@ -265,6 +265,37 @@ export default function Dashboard() {
     }
   };
 
+  const handleDelete = async (complaintId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user || userRole !== 'admin') return;
+
+    if (!confirm('Are you sure you want to delete this complaint? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('complaints')
+        .delete()
+        .eq('id', complaintId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Complaint deleted successfully',
+      });
+
+      await fetchComplaints();
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: error.message,
+      });
+    }
+  };
+
   const getComplaintNumber = (complaintNumber: string) => {
     const match = complaintNumber.match(/-(\d+)$/);
     return match ? `#${match[1]}` : '#1';
@@ -646,6 +677,14 @@ export default function Dashboard() {
                             <DropdownMenuItem onClick={(e) => handleUpvote(complaint.id, e as any)}>
                               {userUpvotes.has(complaint.id) ? 'Remove Upvote' : 'Upvote'}
                             </DropdownMenuItem>
+                            {userRole === 'admin' && (
+                              <DropdownMenuItem 
+                                onClick={(e) => handleDelete(complaint.id, e as any)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                Delete Complaint
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
