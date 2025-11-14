@@ -22,8 +22,18 @@ import {
   Lock,
   ArrowUp,
   Hash,
-  Users
+  Users,
+  Timer,
+  LayoutGrid,
+  List,
+  MoreVertical
 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Pie, PieChart, Bar, BarChart, Cell, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import brototypeLogo from '@/assets/brototype-logo.png';
@@ -40,6 +50,8 @@ interface Complaint {
   upvote_count: number;
   location: string;
   user_id: string;
+  resolved_at: string | null;
+  updated_at: string;
 }
 
 interface UserUpvote {
@@ -50,6 +62,19 @@ interface Stats {
   total: number;
   active: number;
   resolved: number;
+  avgResolutionTime: number;
+}
+
+interface CategoryData {
+  category: string;
+  count: number;
+  fill: string;
+}
+
+interface UrgencyData {
+  urgency: string;
+  count: number;
+  fill: string;
 }
 
 const statusConfig = {
@@ -72,12 +97,16 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
-  const [stats, setStats] = useState<Stats>({ total: 0, active: 0, resolved: 0 });
+  const [stats, setStats] = useState<Stats>({ total: 0, active: 0, resolved: 0, avgResolutionTime: 0 });
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'active' | 'resolved' | 'mine'>('all');
   const [userUpvotes, setUserUpvotes] = useState<Set<string>>(new Set());
   const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
+  const [userRole, setUserRole] = useState<string>('student');
+  const [viewType, setViewType] = useState<'grid' | 'list'>('grid');
+  const [categoryData, setCategoryData] = useState<CategoryData[]>([]);
+  const [urgencyData, setUrgencyData] = useState<UrgencyData[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -101,6 +130,19 @@ export default function Dashboard() {
       .single();
     
     if (data) setUserProfile(data);
+
+    // Fetch user role
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (roleData) {
+      setUserRole(roleData.role);
+      // Set default view based on role
+      setViewType(roleData.role === 'student' ? 'grid' : 'list');
+    }
   };
 
   const fetchComplaints = async () => {
@@ -122,7 +164,7 @@ export default function Dashboard() {
         ['resolved', 'closed'].includes(c.status)
       ).length || 0;
 
-      setStats({ total, active, resolved });
+      setStats({ total, active, resolved, avgResolutionTime: 0 });
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -286,7 +328,7 @@ export default function Dashboard() {
 
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in">
           <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Complaints</CardTitle>
@@ -301,10 +343,10 @@ export default function Dashboard() {
           <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Active Complaints</CardTitle>
-              <Clock className="h-4 w-4 text-warning" />
+              <AlertCircle className="h-4 w-4 text-warning" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-warning">{stats.active}</div>
+              <div className="text-3xl font-bold">{stats.active}</div>
               <p className="text-xs text-muted-foreground mt-1">Pending resolution</p>
             </CardContent>
           </Card>
@@ -315,14 +357,100 @@ export default function Dashboard() {
               <CheckCircle2 className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-success">{stats.resolved}</div>
+              <div className="text-3xl font-bold">{stats.resolved}</div>
               <p className="text-xs text-muted-foreground mt-1">Successfully closed</p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Avg. Resolution Time</CardTitle>
+              <Timer className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{stats.avgResolutionTime.toFixed(1)}</div>
+              <p className="text-xs text-muted-foreground mt-1">Average time to close (days)</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-fade-in">
+          {/* Donut Chart - Complaints by Category */}
+          <Card className="shadow-card hover:shadow-card-hover transition-smooth">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Top Problem Areas</CardTitle>
+              <p className="text-sm text-muted-foreground">Complaints by Category</p>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  facilities: { label: 'Facilities', color: 'hsl(var(--chart-1))' },
+                  technical: { label: 'Technical', color: 'hsl(var(--chart-2))' },
+                  academic: { label: 'Academic', color: 'hsl(var(--chart-3))' },
+                  food: { label: 'Food', color: 'hsl(var(--chart-4))' },
+                  transport: { label: 'Transport', color: 'hsl(var(--chart-5))' },
+                  other: { label: 'Other', color: 'hsl(var(--muted-foreground))' }
+                }}
+                className="h-[300px]"
+              >
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    dataKey="count"
+                    nameKey="category"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={2}
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Legend />
+                </PieChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          {/* Bar Chart - Active Complaints by Urgency */}
+          <Card className="shadow-card hover:shadow-card-hover transition-smooth">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Immediate Triage</CardTitle>
+              <p className="text-sm text-muted-foreground">Active Complaints by Urgency</p>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  critical: { label: 'Critical', color: 'hsl(0 84.2% 60.2%)' },
+                  high: { label: 'High', color: 'hsl(24.6 95% 53.1%)' },
+                  medium: { label: 'Medium', color: 'hsl(47.9 95.8% 53.1%)' },
+                  low: { label: 'Low', color: 'hsl(var(--muted-foreground))' }
+                }}
+                className="h-[300px]"
+              >
+                <BarChart data={urgencyData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="urgency" />
+                  <YAxis />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                    {urgencyData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Action Bar - Search, Filters, View Toggle, and New Complaint */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6 items-stretch md:items-center">
+          {/* Search Input */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -332,39 +460,38 @@ export default function Dashboard() {
               className="pl-10"
             />
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 md:flex-wrap md:overflow-x-visible">
-            <Button
-              variant={filter === 'all' ? 'default' : 'outline'}
-              onClick={() => setFilter('all')}
-            >
-              All
-            </Button>
-            <Button
-              variant={filter === 'mine' ? 'default' : 'outline'}
-              onClick={() => setFilter('mine')}
-            >
-              My Complaints
-            </Button>
-            <Button
-              variant={filter === 'active' ? 'default' : 'outline'}
-              onClick={() => setFilter('active')}
-            >
-              Active
-            </Button>
-            <Button
-              variant={filter === 'resolved' ? 'default' : 'outline'}
-              onClick={() => setFilter('resolved')}
-            >
-              Resolved
-            </Button>
-          </div>
-          <Button onClick={() => navigate('/new-complaint')} className="gap-2">
-            <PlusCircle className="h-4 w-4" />
+          
+          {/* Filter Dropdown */}
+          <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Complaints</SelectItem>
+              <SelectItem value="mine">My Complaints</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="resolved">Resolved</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* View Toggle */}
+          <ToggleGroup type="single" value={viewType} onValueChange={(value) => value && setViewType(value as 'grid' | 'list')}>
+            <ToggleGroupItem value="grid" aria-label="Grid view">
+              <LayoutGrid className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="list" aria-label="List view">
+              <List className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+
+          {/* New Complaint Button */}
+          <Button onClick={() => navigate('/new-complaint')} className="whitespace-nowrap">
+            <PlusCircle className="mr-2 h-4 w-4" />
             New Complaint
           </Button>
         </div>
 
-        {/* Complaints Grid */}
+        {/* Complaints - List or Grid View */}
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
@@ -386,7 +513,92 @@ export default function Dashboard() {
               )}
             </CardContent>
           </Card>
+        ) : viewType === 'list' ? (
+          /* List View - Table */
+          <Card className="shadow-card">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Urgency</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Submitted</TableHead>
+                    <TableHead>Upvotes</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredComplaints.map((complaint) => (
+                    <TableRow 
+                      key={complaint.id}
+                      className="cursor-pointer"
+                      onClick={() => navigate(`/complaint/${complaint.id}`)}
+                    >
+                      <TableCell className="font-mono text-sm">
+                        <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                          <Hash className="h-3 w-3" />
+                          {getComplaintNumber(complaint.complaint_number)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium max-w-[300px] truncate">
+                        {complaint.title}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={`flex items-center gap-1.5 w-fit ${statusConfig[complaint.status as keyof typeof statusConfig]?.color}`}>
+                          {statusConfig[complaint.status as keyof typeof statusConfig]?.icon}
+                          {statusConfig[complaint.status as keyof typeof statusConfig]?.label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className={`text-xs font-medium ${urgencyColors[complaint.urgency as keyof typeof urgencyColors]}`}>
+                          {complaint.urgency.toUpperCase()}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="capitalize">
+                          {complaint.category}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {formatTimeAgo(complaint.created_at)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <ArrowUp className={`h-4 w-4 ${userUpvotes.has(complaint.id) ? 'text-primary' : 'text-muted-foreground'}`} />
+                          <span className="text-sm">{complaint.upvote_count}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/complaint/${complaint.id}`);
+                            }}>
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => handleUpvote(complaint.id, e as any)}>
+                              {userUpvotes.has(complaint.id) ? 'Remove Upvote' : 'Upvote'}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         ) : (
+          /* Grid View - Cards */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredComplaints.map((complaint) => (
               <Card 
@@ -429,10 +641,10 @@ export default function Dashboard() {
                       variant={userUpvotes.has(complaint.id) ? 'default' : 'outline'}
                       size="sm"
                       onClick={(e) => handleUpvote(complaint.id, e)}
-                      className={`gap-1 ${!userUpvotes.has(complaint.id) ? 'border-muted-foreground/30 text-muted-foreground hover:bg-muted hover:text-foreground' : 'bg-gray-300 dark:bg-primary text-gray-900 dark:text-primary-foreground hover:bg-gray-400 dark:hover:bg-primary/90'}`}
+                      className="gap-1.5"
                     >
-                      <ArrowUp className="h-3 w-3" />
-                      <span className="text-xs">{complaint.upvote_count}</span>
+                      <ArrowUp className="h-3.5 w-3.5" />
+                      {complaint.upvote_count}
                     </Button>
                   </div>
                 </CardContent>
