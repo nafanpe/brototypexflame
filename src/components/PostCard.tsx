@@ -9,7 +9,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Heart, MessageCircle, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Trash2, Edit2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -55,6 +56,8 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
   const [isCommenting, setIsCommenting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editedContent, setEditedContent] = useState(post.text_content);
 
   useEffect(() => {
     checkLikeStatus();
@@ -193,6 +196,31 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
     }
   };
 
+  const handleEdit = async () => {
+    if (!user || !editedContent.trim()) return;
+
+    const { error } = await supabase
+      .from('community_posts')
+      .update({ text_content: editedContent })
+      .eq('id', post.id);
+
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update post.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    toast({
+      title: 'Success',
+      description: 'Post updated successfully.'
+    });
+    setIsEditDialogOpen(false);
+    onUpdate();
+  };
+
   return (
     <div className="border-b border-border dark:border-gray-800 p-4 hover:bg-accent/50 dark:hover:bg-gray-900/50 transition-colors bg-card dark:bg-black">
       <div className="flex gap-3">
@@ -215,11 +243,18 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                 {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
               </p>
             </div>
-            {(isAdmin || post.user_id === user?.id) && (
-              <Button variant="ghost" size="icon" onClick={handleDelete} className="hover:bg-accent dark:hover:bg-gray-800 text-muted-foreground dark:text-gray-400 hover:text-destructive dark:hover:text-red-500">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
+            <div className="flex gap-1">
+              {post.user_id === user?.id && (
+                <Button variant="ghost" size="icon" onClick={() => setIsEditDialogOpen(true)} className="hover:bg-accent dark:hover:bg-gray-800 text-muted-foreground dark:text-gray-400 hover:text-primary dark:hover:text-primary">
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              )}
+              {(isAdmin || post.user_id === user?.id) && (
+                <Button variant="ghost" size="icon" onClick={handleDelete} className="hover:bg-accent dark:hover:bg-gray-800 text-muted-foreground dark:text-gray-400 hover:text-destructive dark:hover:text-red-500">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {post.text_content && (
@@ -346,6 +381,32 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
           </div>
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="dark:bg-black dark:border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="dark:text-white">Edit Post</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              value={editedContent}
+              onChange={(e) => setEditedContent(e.target.value)}
+              maxLength={280}
+              className="min-h-[100px] resize-none dark:bg-black dark:border-gray-800 dark:text-white dark:placeholder:text-gray-500"
+            />
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground dark:text-gray-500">
+                {editedContent.length}/280
+              </span>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleEdit} disabled={!editedContent.trim()}>Save</Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
