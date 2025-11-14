@@ -165,6 +165,52 @@ export default function Dashboard() {
       ).length || 0;
 
       setStats({ total, active, resolved, avgResolutionTime: 0 });
+
+      // Calculate category data for chart
+      const categoryMap = new Map<string, number>();
+      data?.forEach(complaint => {
+        categoryMap.set(complaint.category, (categoryMap.get(complaint.category) || 0) + 1);
+      });
+
+      const categoryColors: Record<string, string> = {
+        facilities: 'hsl(var(--chart-1))',
+        technical: 'hsl(var(--chart-2))',
+        academic: 'hsl(var(--chart-3))',
+        food: 'hsl(var(--chart-4))',
+        transport: 'hsl(var(--chart-5))',
+        other: 'hsl(var(--muted-foreground))'
+      };
+
+      const catData: CategoryData[] = Array.from(categoryMap.entries()).map(([category, count]) => ({
+        category: category.charAt(0).toUpperCase() + category.slice(1),
+        count,
+        fill: categoryColors[category] || 'hsl(var(--muted-foreground))'
+      }));
+      setCategoryData(catData);
+
+      // Calculate urgency data for active complaints
+      const activeComplaints = data?.filter(c => 
+        ['submitted', 'in_review', 'in_progress'].includes(c.status)
+      ) || [];
+      
+      const urgencyMap = new Map<string, number>();
+      activeComplaints.forEach(complaint => {
+        urgencyMap.set(complaint.urgency, (urgencyMap.get(complaint.urgency) || 0) + 1);
+      });
+
+      const urgencyColors: Record<string, string> = {
+        critical: 'hsl(0 84.2% 60.2%)',
+        high: 'hsl(24.6 95% 53.1%)',
+        medium: 'hsl(47.9 95.8% 53.1%)',
+        low: 'hsl(var(--muted-foreground))'
+      };
+
+      const urgData: UrgencyData[] = ['critical', 'high', 'medium', 'low'].map(urgency => ({
+        urgency: urgency.charAt(0).toUpperCase() + urgency.slice(1),
+        count: urgencyMap.get(urgency) || 0,
+        fill: urgencyColors[urgency] || 'hsl(var(--muted-foreground))'
+      }));
+      setUrgencyData(urgData);
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -375,75 +421,87 @@ export default function Dashboard() {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 animate-fade-in">
           {/* Donut Chart - Complaints by Category */}
           <Card className="shadow-card hover:shadow-card-hover transition-smooth">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Top Problem Areas</CardTitle>
-              <p className="text-sm text-muted-foreground">Complaints by Category</p>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">Top Problem Areas</CardTitle>
+              <p className="text-xs text-muted-foreground">Complaints by Category</p>
             </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  facilities: { label: 'Facilities', color: 'hsl(var(--chart-1))' },
-                  technical: { label: 'Technical', color: 'hsl(var(--chart-2))' },
-                  academic: { label: 'Academic', color: 'hsl(var(--chart-3))' },
-                  food: { label: 'Food', color: 'hsl(var(--chart-4))' },
-                  transport: { label: 'Transport', color: 'hsl(var(--chart-5))' },
-                  other: { label: 'Other', color: 'hsl(var(--muted-foreground))' }
-                }}
-                className="h-[300px]"
-              >
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    dataKey="count"
-                    nameKey="category"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={2}
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Legend />
-                </PieChart>
-              </ChartContainer>
+            <CardContent className="pb-4">
+              {categoryData.length > 0 ? (
+                <ChartContainer
+                  config={{
+                    facilities: { label: 'Facilities', color: 'hsl(var(--chart-1))' },
+                    technical: { label: 'Technical', color: 'hsl(var(--chart-2))' },
+                    academic: { label: 'Academic', color: 'hsl(var(--chart-3))' },
+                    food: { label: 'Food', color: 'hsl(var(--chart-4))' },
+                    transport: { label: 'Transport', color: 'hsl(var(--chart-5))' },
+                    other: { label: 'Other', color: 'hsl(var(--muted-foreground))' }
+                  }}
+                  className="h-[200px]"
+                >
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      dataKey="count"
+                      nameKey="category"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={75}
+                      paddingAngle={2}
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Legend />
+                  </PieChart>
+                </ChartContainer>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
+                  No data available
+                </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Bar Chart - Active Complaints by Urgency */}
           <Card className="shadow-card hover:shadow-card-hover transition-smooth">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Immediate Triage</CardTitle>
-              <p className="text-sm text-muted-foreground">Active Complaints by Urgency</p>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base font-semibold">Immediate Triage</CardTitle>
+              <p className="text-xs text-muted-foreground">Active Complaints by Urgency</p>
             </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  critical: { label: 'Critical', color: 'hsl(0 84.2% 60.2%)' },
-                  high: { label: 'High', color: 'hsl(24.6 95% 53.1%)' },
-                  medium: { label: 'Medium', color: 'hsl(47.9 95.8% 53.1%)' },
-                  low: { label: 'Low', color: 'hsl(var(--muted-foreground))' }
-                }}
-                className="h-[300px]"
-              >
-                <BarChart data={urgencyData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="urgency" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-                    {urgencyData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ChartContainer>
+            <CardContent className="pb-4">
+              {urgencyData.some(d => d.count > 0) ? (
+                <ChartContainer
+                  config={{
+                    critical: { label: 'Critical', color: 'hsl(0 84.2% 60.2%)' },
+                    high: { label: 'High', color: 'hsl(24.6 95% 53.1%)' },
+                    medium: { label: 'Medium', color: 'hsl(47.9 95.8% 53.1%)' },
+                    low: { label: 'Low', color: 'hsl(var(--muted-foreground))' }
+                  }}
+                  className="h-[200px]"
+                >
+                  <BarChart data={urgencyData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="urgency" />
+                    <YAxis />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                      {urgencyData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartContainer>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
+                  No active complaints
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
