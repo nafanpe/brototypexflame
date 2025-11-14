@@ -24,7 +24,7 @@ const commentSchema = z.object({
 
 const statusUpdateSchema = z.object({
   complaint_id: z.string().uuid('Invalid complaint ID'),
-  status: z.enum(['submitted', 'under_review', 'in_progress', 'resolved', 'closed']),
+  status: z.enum(['submitted', 'in_review', 'in_progress', 'resolved', 'closed']),
   resolution_notes: z.string().trim().max(800, 'Resolution notes must be less than 800 characters').optional().nullable(),
 });
 
