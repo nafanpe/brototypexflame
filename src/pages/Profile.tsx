@@ -50,8 +50,25 @@ export default function Profile() {
         .maybeSingle();
 
       if (error) throw error;
+      
+      // If profile doesn't exist, create it
       if (!data) {
-        throw new Error('Profile not found');
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            full_name: user.email?.split('@')[0] || 'User',
+          })
+          .select()
+          .single();
+
+        if (createError) throw createError;
+        
+        setProfile(newProfile);
+        setFullName(newProfile.full_name || '');
+        setBatchDepartment(newProfile.batch_department || '');
+        setAvatarUrl(newProfile.avatar_url || '');
+        return;
       }
 
       setProfile(data);
