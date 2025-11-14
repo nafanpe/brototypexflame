@@ -40,18 +40,34 @@ const Landing = () => {
     offset: ["start start", "end end"]
   });
 
+  const { scrollYProgress } = useScroll();
+
   const heroRotateX = useTransform(heroScrollProgress, [0, 1], [0, 15]);
   const heroScale = useTransform(heroScrollProgress, [0, 1], [1, 0.9]);
   const heroOpacity = useTransform(heroScrollProgress, [0, 0.5, 1], [1, 0.8, 0.3]);
 
   const horizontalX = useTransform(horizontalScrollProgress, [0, 1], ["0%", "-300%"]);
+  
+  const backgroundPosition = useTransform(
+    scrollYProgress,
+    [0, 1],
+    ["0% 0%", "100% 100%"]
+  );
 
   const handleGetStarted = () => {
     navigate(user ? '/dashboard' : '/auth');
   };
 
   return (
-    <div className="bg-black text-white" style={{ perspective: "1200px" }}>
+    <motion.div 
+      className="bg-black text-white" 
+      style={{ 
+        perspective: "1200px",
+        backgroundImage: "radial-gradient(circle at center, hsl(var(--primary) / 0.05) 1px, transparent 1px)",
+        backgroundSize: "50px 50px",
+        backgroundPosition: backgroundPosition
+      }}
+    >
       {/* Section 1: The Hero with 3D Perspective */}
       <motion.section 
         ref={heroRef}
@@ -215,10 +231,10 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                viewport={{ once: false, amount: 0.4 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                viewport={{ once: true, amount: 0.4 }}
               >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6">Submit.</h2>
@@ -254,10 +270,10 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                viewport={{ once: false, amount: 0.4 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                viewport={{ once: true, amount: 0.4 }}
               >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6">Track.</h2>
@@ -309,10 +325,10 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                viewport={{ once: false, amount: 0.4 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                viewport={{ once: true, amount: 0.4 }}
               >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6">Resolve.</h2>
@@ -348,10 +364,10 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                viewport={{ once: false, amount: 0.4 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                viewport={{ once: true, amount: 0.4 }}
               >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6">Connect.</h2>
@@ -394,7 +410,7 @@ const Landing = () => {
       </section>
 
       {/* Section 4: Built for the Brocamp */}
-      <section className="min-h-screen flex items-center justify-center px-6 py-20">
+      <section className="min-h-screen flex items-center justify-center px-6 py-20 -mt-[150vh]">
         <FadeInSection>
           <div className="max-w-6xl mx-auto">
             <h2 className="text-5xl md:text-6xl font-bold mb-16 text-center">
@@ -403,9 +419,17 @@ const Landing = () => {
             <div className="grid md:grid-cols-3 gap-8">
               {/* Practical First */}
               <div className="text-center">
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <motion.div 
+                  className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6"
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ 
+                    duration: 2.5, 
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
                   <Code className="w-10 h-10 text-primary" />
-                </div>
+                </motion.div>
                 <h3 className="text-2xl font-semibold mb-4">Practical First</h3>
                 <p className="text-gray-400 leading-relaxed">
                   Brototype is about building real-world solutions. 'Connect' is our own professional tool, built by and for the community to solve our own daily challenges.
@@ -414,9 +438,18 @@ const Landing = () => {
 
               {/* Community-Driven */}
               <div className="text-center">
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <motion.div 
+                  className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6"
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ 
+                    duration: 2.5, 
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 0.3
+                  }}
+                >
                   <Users className="w-10 h-10 text-primary" />
-                </div>
+                </motion.div>
                 <h3 className="text-2xl font-semibold mb-4">Community-Driven</h3>
                 <p className="text-gray-400 leading-relaxed">
                   From peer-to-peer learning to collaborative projects, community is everything. This is your central hub to engage, share, and grow together.
@@ -425,9 +458,18 @@ const Landing = () => {
 
               {/* Total Ownership */}
               <div className="text-center">
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <motion.div 
+                  className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6"
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ 
+                    duration: 2.5, 
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: 0.6
+                  }}
+                >
                   <UserCheck className="w-10 h-10 text-primary" />
-                </div>
+                </motion.div>
                 <h3 className="text-2xl font-semibold mb-4">Total Ownership</h3>
                 <p className="text-gray-400 leading-relaxed">
                   This platform empowers you to take ownership of your environment. Report issues, track solutions, and help us build a better campus.
@@ -560,7 +602,7 @@ const Landing = () => {
 
       {/* Fade to black at bottom */}
       <div className="h-32 bg-gradient-to-b from-transparent to-black" />
-    </div>
+    </motion.div>
   );
 };
 
