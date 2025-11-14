@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, MessageSquare, AlertCircle, CheckCircle2, Code, Users, UserCheck, Heart, Image } from "lucide-react";
+import { Star, MessageSquare, AlertCircle, CheckCircle2, Code, Users, UserCheck, Heart, Image, ArrowRight } from "lucide-react";
 import logo from "@/assets/brototype-logo.png";
 import { CustomCursor } from "@/components/CustomCursor";
 import { BackToTopButton } from "@/components/BackToTopButton";
@@ -157,9 +157,16 @@ const Landing = () => {
           <Button
             size="lg"
             onClick={handleGetStarted}
-            className="rounded-full px-8 py-6 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
+            className="rounded-full px-8 py-6 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 group"
           >
             Get Started
+            <motion.div
+              initial={{ x: 0 }}
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </motion.div>
           </Button>
         </motion.div>
       </motion.section>
@@ -648,9 +655,16 @@ const Landing = () => {
             <Button
               size="lg"
               onClick={handleGetStarted}
-              className="rounded-full px-8 py-6 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
+              className="rounded-full px-8 py-6 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 group"
             >
               Get Started
+              <motion.div
+                initial={{ x: 0 }}
+                animate={{ x: [0, 5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+              </motion.div>
             </Button>
           </div>
         </FadeInSection>

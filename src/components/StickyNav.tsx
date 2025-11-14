@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 import logo from "@/assets/brototype-logo.png";
 
 interface StickyNavProps {
@@ -38,9 +39,10 @@ export const StickyNav = ({ onGetStarted }: StickyNavProps) => {
             </div>
             <Button
               onClick={onGetStarted}
-              className="rounded-full px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90"
+              className="rounded-full px-6 py-2 bg-primary text-primary-foreground hover:bg-primary/90 group"
             >
               Get Started
+              <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </motion.nav>
