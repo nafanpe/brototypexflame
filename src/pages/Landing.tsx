@@ -1,5 +1,5 @@
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +29,7 @@ const Landing = () => {
   const { user } = useAuth();
   const heroRef = useRef(null);
   const horizontalRef = useRef(null);
+  const [contentIndex, setContentIndex] = useState(0);
 
   const { scrollYProgress: heroScrollProgress } = useScroll({
     target: heroRef,
@@ -40,11 +41,47 @@ const Landing = () => {
     offset: ["start start", "end end"]
   });
 
+  // Global scroll progress for progress bar
+  const { scrollYProgress } = useScroll();
+
   const heroRotateX = useTransform(heroScrollProgress, [0, 1], [0, 15]);
   const heroScale = useTransform(heroScrollProgress, [0, 1], [1, 0.9]);
   const heroOpacity = useTransform(heroScrollProgress, [0, 0.5, 1], [1, 0.8, 0.3]);
 
   const horizontalX = useTransform(horizontalScrollProgress, [0, 1], ["0%", "-300%"]);
+
+  // Content arrays for Living Hub
+  const communityPosts = [
+    { author: "Alex Kumar", handle: "@alex_codes", text: "Just launched my first React project! Thanks to @mentor for the help! #brototype #react", likes: 42, comments: 12 },
+    { author: "Priya Singh", handle: "@priya_dev", text: "Anyone else struggling with async/await? Let's pair program! 💻", likes: 28, comments: 8 },
+    { author: "John Mathew", handle: "@john_codes", text: "Finished the JavaScript course today! Feeling pumped! 🔥 #brototype", likes: 56, comments: 19 }
+  ];
+
+  const complaints = [
+    { title: "WiFi in Lab 3 is down", resolution: "IT team replaced the faulty router. WiFi is now operational.", time: "2 hours ago" },
+    { title: "Broken chair in Study Room 2", resolution: "Maintenance team replaced the chair. Room is now ready for use.", time: "1 day ago" },
+    { title: "AC not working in Classroom A", resolution: "HVAC technician repaired the AC unit. Temperature is now optimal.", time: "3 hours ago" }
+  ];
+
+  const imageCaptions = [
+    "The Brocamp in action.",
+    "Hackathon winners 2024.",
+    "Community meetup last Friday."
+  ];
+
+  const discussionPosts = [
+    { author: "Maria Santos", handle: "@maria_ui", text: "What's everyone's favorite VS Code theme for dark mode? Need ideas.", likes: 18, comments: 15 },
+    { author: "Rahul Verma", handle: "@rahul_js", text: "Just discovered the power of TypeScript! Game changer 🚀", likes: 34, comments: 21 },
+    { author: "Sarah Johnson", handle: "@sarah_fullstack", text: "Looking for a study buddy for the Node.js module. DM me!", likes: 22, comments: 9 }
+  ];
+
+  // Auto-rotate content every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setContentIndex((prev) => (prev + 1) % 3);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleGetStarted = () => {
     navigate(user ? '/dashboard' : '/auth');
@@ -52,6 +89,12 @@ const Landing = () => {
 
   return (
     <div className="bg-black text-white" style={{ perspective: "1200px" }}>
+      {/* Scroll Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-primary z-50 origin-left"
+        style={{ scaleX: scrollYProgress }}
+      />
+
       {/* Section 1: The Hero with 3D Perspective */}
       <motion.section 
         ref={heroRef}
@@ -394,7 +437,7 @@ const Landing = () => {
       </section>
 
       {/* Section 4: Built for the Brocamp */}
-      <section className="min-h-screen flex items-center justify-center px-6 py-20">
+      <section className="min-h-screen flex items-center justify-center px-6 py-20 md:-mt-[100vh]">
         <FadeInSection>
           <div className="max-w-6xl mx-auto">
             <h2 className="text-5xl md:text-6xl font-bold mb-16 text-center">
@@ -447,90 +490,133 @@ const Landing = () => {
             </h2>
             <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
               {/* Grid Item 1: Community Post */}
-              <Card className="bg-card border-border p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-semibold">Alex Kumar</span>
-                      <span className="text-xs text-gray-500">@alex_codes</span>
+              <Card className="bg-card border-border p-6 min-h-[180px] flex items-center">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`post1-${contentIndex}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-full"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Users className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-semibold">{communityPosts[contentIndex].author}</span>
+                          <span className="text-xs text-gray-500">{communityPosts[contentIndex].handle}</span>
+                        </div>
+                        <p className="text-sm mb-3">
+                          {communityPosts[contentIndex].text}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <button className="flex items-center gap-1 hover:text-red-400 transition-colors">
+                            <Heart className="h-4 w-4" />
+                            <span>{communityPosts[contentIndex].likes}</span>
+                          </button>
+                          <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                            <MessageSquare className="h-4 w-4" />
+                            <span>{communityPosts[contentIndex].comments}</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm mb-3">
-                      Just launched my first React project! Thanks to @mentor for the help! #brototype #react
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <button className="flex items-center gap-1 hover:text-red-400 transition-colors">
-                        <Heart className="h-4 w-4" />
-                        <span>42</span>
-                      </button>
-                      <button className="flex items-center gap-1 hover:text-primary transition-colors">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>12</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  </motion.div>
+                </AnimatePresence>
               </Card>
 
               {/* Grid Item 2: Resolved Complaint */}
-              <Card className="bg-card border-border p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="h-5 w-5 text-success" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-semibold">WiFi in Lab 3 is down</span>
-                      <Badge className="bg-success text-success-foreground">Resolved</Badge>
+              <Card className="bg-card border-border p-6 min-h-[180px] flex items-center">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`complaint-${contentIndex}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-full"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 bg-success/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <CheckCircle2 className="h-5 w-5 text-success" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-semibold">{complaints[contentIndex].title}</span>
+                          <Badge className="bg-success text-success-foreground">Resolved</Badge>
+                        </div>
+                        <p className="text-sm text-gray-400 mb-3">
+                          {complaints[contentIndex].resolution}
+                        </p>
+                        <div className="text-xs text-gray-500">
+                          Resolved {complaints[contentIndex].time}
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-gray-400 mb-3">
-                      IT team replaced the faulty router. WiFi is now operational.
-                    </p>
-                    <div className="text-xs text-gray-500">
-                      Resolved 2 hours ago
-                    </div>
-                  </div>
-                </div>
+                  </motion.div>
+                </AnimatePresence>
               </Card>
 
               {/* Grid Item 3: Community Image */}
-              <Card className="bg-card border-border p-6">
-                <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-3">
-                  <Image className="h-12 w-12 text-muted-foreground" />
-                </div>
-                <p className="text-sm text-gray-400 text-center">
-                  The Brocamp in action.
-                </p>
+              <Card className="bg-card border-border p-6 min-h-[180px]">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`image-${contentIndex}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <div className="aspect-video bg-muted rounded-md flex items-center justify-center mb-3">
+                      <Image className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                    <p className="text-sm text-gray-400 text-center">
+                      {imageCaptions[contentIndex]}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
               </Card>
 
               {/* Grid Item 4: Community Post */}
-              <Card className="bg-card border-border p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="font-semibold">Maria Santos</span>
-                      <span className="text-xs text-gray-500">@maria_ui</span>
+              <Card className="bg-card border-border p-6 min-h-[180px] flex items-center">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`post2-${contentIndex}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="w-full"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Users className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-semibold">{discussionPosts[contentIndex].author}</span>
+                          <span className="text-xs text-gray-500">{discussionPosts[contentIndex].handle}</span>
+                        </div>
+                        <p className="text-sm mb-3">
+                          {discussionPosts[contentIndex].text}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <button className="flex items-center gap-1 hover:text-red-400 transition-colors">
+                            <Heart className="h-4 w-4" />
+                            <span>{discussionPosts[contentIndex].likes}</span>
+                          </button>
+                          <button className="flex items-center gap-1 hover:text-primary transition-colors">
+                            <MessageSquare className="h-4 w-4" />
+                            <span>{discussionPosts[contentIndex].comments}</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm mb-3">
-                      What's everyone's favorite VS Code theme for dark mode? Need ideas.
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <button className="flex items-center gap-1 hover:text-red-400 transition-colors">
-                        <Heart className="h-4 w-4" />
-                        <span>18</span>
-                      </button>
-                      <button className="flex items-center gap-1 hover:text-primary transition-colors">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>15</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  </motion.div>
+                </AnimatePresence>
               </Card>
             </div>
           </div>
