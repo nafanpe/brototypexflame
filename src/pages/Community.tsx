@@ -48,6 +48,7 @@ export default function Community() {
   const [isPosting, setIsPosting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [topComplaints, setTopComplaints] = useState<Complaint[]>([]);
+  const [topPosts, setTopPosts] = useState<Post[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -58,6 +59,7 @@ export default function Community() {
     fetchUserProfile();
     fetchPosts();
     fetchTopComplaints();
+    fetchTopPosts();
     subscribeToRealtimePosts();
   }, [user]);
 
@@ -104,6 +106,26 @@ export default function Community() {
       console.error('Error fetching top complaints:', error);
     } else {
       setTopComplaints(data || []);
+    }
+  };
+
+  const fetchTopPosts = async () => {
+    const { data, error } = await supabase
+      .from('community_posts')
+      .select(`
+        *,
+        profiles:user_id (
+          full_name,
+          avatar_url
+        )
+      `)
+      .order('like_count', { ascending: false })
+      .limit(5);
+
+    if (error) {
+      console.error('Error fetching top posts:', error);
+    } else {
+      setTopPosts(data || []);
     }
   };
 
@@ -220,67 +242,6 @@ export default function Community() {
     }
   };
 
-  const PostForm = () => (
-    <div className="flex gap-3">
-      <Avatar className="h-10 w-10">
-        <AvatarImage src={userProfile?.avatar_url || ''} />
-        <AvatarFallback className="bg-primary text-primary-foreground">
-          {userProfile?.full_name?.charAt(0) || 'U'}
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex-1 space-y-3">
-        <Textarea
-          placeholder="What's happening?"
-          value={postContent}
-          onChange={(e) => setPostContent(e.target.value)}
-          maxLength={280}
-          className="min-h-[60px] resize-none dark:bg-black dark:border-gray-800 dark:text-white dark:placeholder:text-gray-500"
-        />
-        {imagePreview && (
-          <div className="relative">
-            <img src={imagePreview} alt="Preview" className="rounded-lg max-h-64 object-cover" />
-            <Button
-              variant="destructive"
-              size="icon"
-              className="absolute top-2 right-2"
-              onClick={clearImage}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <input
-              type="file"
-              id="image-upload"
-              accept="image/*"
-              className="hidden"
-              onChange={handleImageSelect}
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground dark:text-gray-400 hover:text-primary dark:hover:text-primary"
-              onClick={() => document.getElementById('image-upload')?.click()}
-            >
-              <ImageIcon className="h-5 w-5" />
-            </Button>
-            <span className="text-xs text-muted-foreground dark:text-gray-500">
-              {postContent.length}/280
-            </span>
-          </div>
-          <Button
-            onClick={handleCreatePost}
-            disabled={(!postContent.trim() && !selectedImage) || isPosting}
-            className="bg-primary hover:bg-primary/90"
-          >
-            {isPosting ? 'Posting...' : 'Post'}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-background dark:bg-black">
@@ -310,7 +271,65 @@ export default function Community() {
                 <DialogHeader>
                   <DialogTitle className="dark:text-white">Create Post</DialogTitle>
                 </DialogHeader>
-                <PostForm />
+                <div className="flex gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={userProfile?.avatar_url || ''} />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {userProfile?.full_name?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-3">
+                    <Textarea
+                      placeholder="What's happening?"
+                      value={postContent}
+                      onChange={(e) => setPostContent(e.target.value)}
+                      maxLength={280}
+                      className="min-h-[60px] resize-none dark:bg-black dark:border-gray-800 dark:text-white dark:placeholder:text-gray-500"
+                    />
+                    {imagePreview && (
+                      <div className="relative">
+                        <img src={imagePreview} alt="Preview" className="rounded-lg max-h-64 object-cover" />
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2"
+                          onClick={clearImage}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          id="image-upload-dialog"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleImageSelect}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground dark:text-gray-400 hover:text-primary dark:hover:text-primary"
+                          onClick={() => document.getElementById('image-upload-dialog')?.click()}
+                        >
+                          <ImageIcon className="h-5 w-5" />
+                        </Button>
+                        <span className="text-xs text-muted-foreground dark:text-gray-500">
+                          {postContent.length}/280
+                        </span>
+                      </div>
+                      <Button
+                        onClick={handleCreatePost}
+                        disabled={(!postContent.trim() && !selectedImage) || isPosting}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        {isPosting ? 'Posting...' : 'Post'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </DialogContent>
             </Dialog>
             <Button 
@@ -355,7 +374,65 @@ export default function Community() {
           <div className="lg:col-span-7 xl:col-span-7">
             {/* Create Post */}
             <div className="border-b border-border dark:border-gray-800 p-4 bg-card dark:bg-black">
-              <PostForm />
+              <div className="flex gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={userProfile?.avatar_url || ''} />
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {userProfile?.full_name?.charAt(0) || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-3">
+                  <Textarea
+                    placeholder="What's happening?"
+                    value={postContent}
+                    onChange={(e) => setPostContent(e.target.value)}
+                    maxLength={280}
+                    className="min-h-[60px] resize-none dark:bg-black dark:border-gray-800 dark:text-white dark:placeholder:text-gray-500"
+                  />
+                  {imagePreview && (
+                    <div className="relative">
+                      <img src={imagePreview} alt="Preview" className="rounded-lg max-h-64 object-cover" />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={clearImage}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        id="image-upload"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleImageSelect}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground dark:text-gray-400 hover:text-primary dark:hover:text-primary"
+                        onClick={() => document.getElementById('image-upload')?.click()}
+                      >
+                        <ImageIcon className="h-5 w-5" />
+                      </Button>
+                      <span className="text-xs text-muted-foreground dark:text-gray-500">
+                        {postContent.length}/280
+                      </span>
+                    </div>
+                    <Button
+                      onClick={handleCreatePost}
+                      disabled={(!postContent.trim() && !selectedImage) || isPosting}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      {isPosting ? 'Posting...' : 'Post'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Posts Feed */}
@@ -385,19 +462,26 @@ export default function Community() {
               </div>
             </div>
 
-            {/* What's Happening */}
+            {/* Top Posts */}
             <div className="bg-card dark:bg-black border border-border dark:border-gray-800 rounded-lg p-4">
               <h3 className="font-semibold flex items-center gap-2 mb-4 text-foreground dark:text-white">
                 <TrendingUp className="h-4 w-4" />
-                What's Happening
+                Top Posts
               </h3>
               <div className="space-y-3">
-                {['#Placements', '#Hackathons', '#React', '#JavaScript', '#WebDevelopment'].map((topic) => (
-                  <div key={topic} className="py-2 cursor-pointer hover:bg-accent dark:hover:bg-gray-900 rounded-md px-2 transition-colors">
-                    <p className="font-medium text-sm text-foreground dark:text-white">{topic}</p>
-                    <p className="text-xs text-muted-foreground dark:text-gray-500">Trending in Tech</p>
+                {topPosts.map((post) => (
+                  <div key={post.id} className="py-2 cursor-pointer hover:bg-accent dark:hover:bg-gray-900 rounded-md px-2 transition-colors">
+                    <p className="font-medium text-sm text-foreground dark:text-white line-clamp-2">{post.text_content}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-xs text-muted-foreground dark:text-gray-500">{post.profiles?.full_name || 'Unknown User'}</p>
+                      <span className="text-xs text-muted-foreground dark:text-gray-500">•</span>
+                      <p className="text-xs text-muted-foreground dark:text-gray-500">{post.like_count} likes</p>
+                    </div>
                   </div>
                 ))}
+                {topPosts.length === 0 && (
+                  <p className="text-xs text-muted-foreground dark:text-gray-500 text-center py-2">No posts yet</p>
+                )}
               </div>
             </div>
 

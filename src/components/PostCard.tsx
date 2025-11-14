@@ -230,7 +230,8 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
             <img 
               src={post.image_url} 
               alt="Post image" 
-              className="rounded-lg max-h-96 w-full object-cover mt-2"
+              className="rounded-lg w-full object-contain mt-2"
+              style={{ maxHeight: '600px' }}
             />
           )}
 
@@ -279,7 +280,8 @@ export function PostCard({ post, onUpdate }: PostCardProps) {
                         <img 
                           src={post.image_url} 
                           alt="Post image" 
-                          className="rounded-lg max-h-64 w-full object-cover mt-2"
+                          className="rounded-lg w-full object-contain mt-2"
+                          style={{ maxHeight: '400px' }}
                         />
                       )}
                     </div>
