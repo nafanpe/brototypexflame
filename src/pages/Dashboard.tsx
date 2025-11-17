@@ -355,54 +355,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b shadow-sm sticky top-0 z-10 animate-fade-in">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          
-          {/* ===== DESKTOP HEADER (Visible MD and up) ===== */}
-          <div className="hidden md:flex items-center gap-3 cursor-pointer hover:opacity-80 transition-smooth" onClick={() => navigate('/')}>
-            <img src={brototypeLogo} alt="Brototype" className="h-10" />
-            <div>
-              <h1 className="text-2xl font-bold">Brototype Connect</h1>
-              <p className="text-sm text-muted-foreground">Complaint Management System</p>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/community')} title="Community">
-              <Users className="h-4 w-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => navigate('/profile')}
-              className="rounded-full p-0 h-10 w-10"
-            >
-              <Avatar className="h-9 w-9">
-                <AvatarImage src={userProfile?.avatar_url || ''} />
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {userProfile?.full_name?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
-            <NotificationBell />
-            <ThemeToggle />
-            <Button variant="outline" onClick={signOut} className="hover-highlight">
-              <LogOut className="mr-2 h-4 w-4" />
-              Logout
-            </Button>
-          </div>
-
-          {/* ===== MOBILE HEADER (Visible BELOW MD) ===== */}
-          <div className="flex md:hidden items-center justify-between w-full">
-            <div className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-smooth" onClick={() => navigate('/')}>
-              <img src={brototypeLogo} alt="Brototype" className="h-9" />
-            </div>
-            <MobileSidebar />
-          </div>
-
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 animate-fade-in">

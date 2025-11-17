@@ -67,27 +67,31 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 0 0% 9%;
+    /* Deep Navy Background - The new calm, professional base */
+    --background: 220 15% 8%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 14%;
+    /* Borderless Card - Subtle lift from background */
+    --card: 220 15% 12%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 14%;
+    --popover: 220 15% 12%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    /* Electric Blue/Purple - Single vibrant color for all interactions */
+    --primary: 230 90% 65%;
+    --primary-foreground: 230 10% 10%;
 
-    --secondary: 0 0% 14%;
+    --secondary: 220 15% 12%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 220 15% 12%;
+    --muted-foreground: 220 10% 50%;
 
-    --accent: 0 0% 14%;
+    --accent: 220 15% 12%;
     --accent-foreground: 0 0% 98%;
 
+    /* Status Colors - Information, not interaction */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
 
@@ -97,23 +101,26 @@ All colors MUST be HSL.
     --danger: 0 84% 60%;
     --danger-foreground: 0 0% 100%;
 
-    --info: 0 0% 65%;
+    --info: 220 10% 50%;
     --info-foreground: 0 0% 100%;
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 0 0% 98%;
-    --sidebar-background: 0 0% 9%;
+    /* Subtle borders for dividers only */
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 230 90% 65%;
+    
+    /* Sidebar colors matching the new theme */
+    --sidebar-background: 220 15% 8%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 0 0% 9%;
-    --sidebar-accent: 0 0% 14%;
+    --sidebar-primary: 230 90% 65%;
+    --sidebar-primary-foreground: 230 10% 10%;
+    --sidebar-accent: 220 15% 12%;
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 0 0% 98%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 230 90% 65%;
   }
 }
 
