@@ -90,7 +90,7 @@ export function PermanentSidebar() {
         </NavLink>
 
         <NavLink
-          to="/profile"
+          to="/settings"
           className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
           activeClassName="bg-sidebar-accent font-medium"
         >
@@ -102,7 +102,7 @@ export function PermanentSidebar() {
           ) : (
             <UserCircle className="h-5 w-5" />
           )}
-          {!collapsed && <span>Profile</span>}
+          {!collapsed && <span>Settings</span>}
         </NavLink>
 
         {/* Primary Action Button */}

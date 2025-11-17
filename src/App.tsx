@@ -11,7 +11,8 @@ import Dashboard from "./pages/Dashboard";
 import Community from "./pages/Community";
 import NewComplaint from "./pages/NewComplaint";
 import ComplaintDetail from "./pages/ComplaintDetail";
-import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
+import AdminUsers from "./pages/admin/Users";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +34,8 @@ const App = () => (
             <Route path="/community" element={<AppShell><Community /></AppShell>} />
             <Route path="/new-complaint" element={<AppShell><NewComplaint /></AppShell>} />
             <Route path="/complaint/:id" element={<AppShell><ComplaintDetail /></AppShell>} />
-            <Route path="/profile" element={<AppShell><Profile /></AppShell>} />
+            <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
+            <Route path="/admin/users" element={<AppShell><AdminUsers /></AppShell>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

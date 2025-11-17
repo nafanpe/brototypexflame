@@ -86,10 +86,10 @@ export function MobileSidebar() {
           <Button 
             variant="ghost" 
             className="justify-start text-base" 
-            onClick={() => handleNavigate('/profile')}
+            onClick={() => handleNavigate('/settings')}
           >
             <UserCircle className="mr-2 h-5 w-5" />
-            Profile
+            Settings
           </Button>
 
           {/* Primary Action */}
