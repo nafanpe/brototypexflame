@@ -94,7 +94,7 @@ const Landing = () => {
   };
 
   return (
-    <div className="bg-background text-foreground" style={{ perspective: "1200px" }}>
+    <div className="bg-black text-white" style={{ perspective: "1200px" }}>
       {/* Scroll Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-primary z-50 origin-left"
