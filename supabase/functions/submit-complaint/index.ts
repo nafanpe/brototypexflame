@@ -14,6 +14,7 @@ const complaintSchema = z.object({
   urgency: z.enum(['low', 'medium', 'high', 'critical']),
   location: z.string().trim().max(50, 'Location too long').optional().nullable(),
   is_anonymous: z.boolean().default(false),
+  admin_only: z.boolean().default(false),
 });
 
 const commentSchema = z.object({
@@ -150,6 +151,7 @@ async function handleCreateComplaint(supabaseClient: any, userId: string, body: 
       urgency: validated.urgency,
       location: validated.location || null,
       is_anonymous: validated.is_anonymous,
+      admin_only: validated.admin_only,
     })
     .select()
     .single();

@@ -300,6 +300,16 @@ export default function ComplaintDetail() {
                   />
                 </div>
               )}
+              {complaint.is_anonymous && isAdmin && complaint.profiles && (
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <UserBadge 
+                    userId={complaint.user_id} 
+                    userName={complaint.profiles.full_name || 'Unknown'} 
+                  />
+                  <Badge variant="secondary" className="text-xs">Admin View</Badge>
+                </div>
+              )}
             </div>
 
             {complaint.resolution_notes && (
