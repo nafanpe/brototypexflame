@@ -1,14 +1,37 @@
-import { Home, Users, UserCircle, Plus, LogOut } from "lucide-react";
+import { Home, Users, UserCircle, Plus, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useAuth } from "@/contexts/AuthContext";
-import { ThemeToggle } from "./ThemeToggle";
+import { NotificationBell } from "./NotificationBell";
 import { Button } from "./ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/brototype-logo.png";
 
 export function PermanentSidebar() {
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [collapsed, setCollapsed] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', user.id)
+      .single();
+    
+    if (data) setUserProfile(data);
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -19,14 +42,26 @@ export function PermanentSidebar() {
   };
 
   return (
-    <aside className="w-64 h-screen bg-sidebar border-r border-sidebar-border flex flex-col sticky top-0">
-      {/* Logo Section */}
+    <aside className={`${collapsed ? 'w-20' : 'w-64'} h-screen bg-sidebar border-r border-sidebar-border flex flex-col sticky top-0 transition-all duration-300`}>
+      {/* Logo Section with Toggle */}
       <div className="p-6 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <img src={logo} alt="Brototype" className="h-8 w-8" />
-          <span className="text-lg font-semibold text-sidebar-foreground">
-            Brototype Connect
-          </span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Brototype" className="h-8 w-8" />
+            {!collapsed && (
+              <span className="text-lg font-semibold text-sidebar-foreground">
+                Brototype Connect
+              </span>
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCollapsed(!collapsed)}
+            className="h-8 w-8"
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
 
@@ -34,58 +69,70 @@ export function PermanentSidebar() {
       <nav className="flex-1 p-4 space-y-2">
         <NavLink
           to="/dashboard"
-          className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth"
+          className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
           activeClassName="bg-sidebar-accent font-medium"
         >
           <Home className="h-5 w-5" />
-          <span>Dashboard</span>
+          {!collapsed && <span>Dashboard</span>}
         </NavLink>
 
         <NavLink
           to="/community"
-          className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth"
+          className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
           activeClassName="bg-sidebar-accent font-medium"
         >
           <Users className="h-5 w-5" />
-          <span>Community</span>
+          {!collapsed && <span>Community</span>}
         </NavLink>
 
         <NavLink
           to="/profile"
-          className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth"
+          className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
           activeClassName="bg-sidebar-accent font-medium"
         >
-          <UserCircle className="h-5 w-5" />
-          <span>Profile</span>
+          {userProfile?.avatar_url ? (
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={userProfile.avatar_url} />
+              <AvatarFallback><UserCircle className="h-5 w-5" /></AvatarFallback>
+            </Avatar>
+          ) : (
+            <UserCircle className="h-5 w-5" />
+          )}
+          {!collapsed && <span>Profile</span>}
         </NavLink>
 
         {/* Primary Action Button */}
         <div className="pt-4">
           <Button
             onClick={handleNewComplaint}
-            className="w-full justify-start gap-3"
+            className={`w-full gap-3 ${collapsed ? 'justify-center px-2' : 'justify-start'}`}
             size="default"
           >
             <Plus className="h-5 w-5" />
-            <span>New Complaint</span>
+            {!collapsed && <span>New Complaint</span>}
           </Button>
         </div>
       </nav>
 
       {/* Bottom Section */}
       <div className="p-4 border-t border-sidebar-border space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Theme</span>
-          <ThemeToggle />
+        <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
+          {collapsed ? (
+            <NotificationBell />
+          ) : (
+            <>
+              <NotificationBell />
+            </>
+          )}
         </div>
         
         <Button
           variant="ghost"
           onClick={handleSignOut}
-          className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent"
+          className={`w-full gap-3 text-sidebar-foreground hover:bg-sidebar-accent ${collapsed ? 'justify-center px-2' : 'justify-start'}`}
         >
           <LogOut className="h-5 w-5" />
-          <span>Logout</span>
+          {!collapsed && <span>Logout</span>}
         </Button>
       </div>
     </aside>

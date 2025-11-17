@@ -188,13 +188,9 @@ export default function Dashboard() {
       }));
       setCategoryData(catData);
 
-      // Calculate urgency data for active complaints
-      const activeComplaints = data?.filter(c => 
-        ['submitted', 'in_review', 'in_progress'].includes(c.status)
-      ) || [];
-      
+      // Calculate urgency data for ALL complaints (not just active)
       const urgencyMap = new Map<string, number>();
-      activeComplaints.forEach(complaint => {
+      data?.forEach(complaint => {
         urgencyMap.set(complaint.urgency, (urgencyMap.get(complaint.urgency) || 0) + 1);
       });
 
@@ -454,7 +450,7 @@ export default function Dashboard() {
             <Card className="shadow-card hover:shadow-card-hover transition-smooth">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-semibold">Immediate Triage</CardTitle>
-                <p className="text-xs text-muted-foreground">Active Complaints by Urgency</p>
+                <p className="text-xs text-muted-foreground">All Complaints by Urgency</p>
               </CardHeader>
               <CardContent className="pb-2">
                 {urgencyData.some(d => d.count > 0) ? (
