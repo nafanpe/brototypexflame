@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, LogOut, Home, Plus, Users, UserCircle } from "lucide-react";
+import { Menu, LogOut, Home, Plus, Users, Settings } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +21,7 @@ export function MobileSidebar() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -38,6 +39,16 @@ export function MobileSidebar() {
       .single();
     
     if (data) setUserProfile(data);
+
+    // Check admin role
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    
+    setIsAdmin(!!roleData);
   };
 
   const handleNavigate = (path: string) => {
@@ -88,9 +99,26 @@ export function MobileSidebar() {
             className="justify-start text-base" 
             onClick={() => handleNavigate('/settings')}
           >
-            <UserCircle className="mr-2 h-5 w-5" />
+            <Settings className="mr-2 h-5 w-5" />
             Settings
           </Button>
+
+          {/* Admin Section */}
+          {isAdmin && (
+            <>
+              <div className="px-3 py-2 mt-4">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</span>
+              </div>
+              <Button 
+                variant="ghost" 
+                className="justify-start text-base" 
+                onClick={() => handleNavigate('/admin/users')}
+              >
+                <Users className="mr-2 h-5 w-5" />
+                User Directory
+              </Button>
+            </>
+          )}
 
           {/* Primary Action */}
           <div className="pt-4">

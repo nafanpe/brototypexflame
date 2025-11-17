@@ -1,4 +1,4 @@
-import { Home, Users, UserCircle, Plus, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Users, Settings, Plus, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "./NotificationBell";
@@ -15,6 +15,7 @@ export function PermanentSidebar() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -32,6 +33,16 @@ export function PermanentSidebar() {
       .single();
     
     if (data) setUserProfile(data);
+
+    // Check admin role
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    
+    setIsAdmin(!!roleData);
   };
 
   const handleSignOut = async () => {
@@ -94,16 +105,28 @@ export function PermanentSidebar() {
           className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
           activeClassName="bg-sidebar-accent font-medium"
         >
-          {userProfile?.avatar_url ? (
-            <Avatar className="h-5 w-5">
-              <AvatarImage src={userProfile.avatar_url} />
-              <AvatarFallback><UserCircle className="h-5 w-5" /></AvatarFallback>
-            </Avatar>
-          ) : (
-            <UserCircle className="h-5 w-5" />
-          )}
+          <Settings className="h-5 w-5" />
           {!collapsed && <span>Settings</span>}
         </NavLink>
+
+        {/* Admin Section */}
+        {isAdmin && (
+          <>
+            {!collapsed && (
+              <div className="px-4 py-2 mt-4">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</span>
+              </div>
+            )}
+            <NavLink
+              to="/admin/users"
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
+              activeClassName="bg-sidebar-accent font-medium"
+            >
+              <Users className="h-5 w-5" />
+              {!collapsed && <span>User Directory</span>}
+            </NavLink>
+          </>
+        )}
 
         {/* Primary Action Button */}
         <div className="pt-4">
