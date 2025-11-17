@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { NewPostProvider } from "@/contexts/NewPostContext";
 import { AppShell } from "@/components/AppShell";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
@@ -24,22 +25,24 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Routes>
-            {/* Public routes without AppShell */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<Auth />} />
-            
-            {/* Protected routes with AppShell */}
-            <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
-            <Route path="/community" element={<AppShell><Community /></AppShell>} />
-            <Route path="/new-complaint" element={<AppShell><NewComplaint /></AppShell>} />
-            <Route path="/complaint/:id" element={<AppShell><ComplaintDetail /></AppShell>} />
-            <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
-            <Route path="/admin/users" element={<AppShell><AdminUsers /></AppShell>} />
-            
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <NewPostProvider>
+            <Routes>
+              {/* Public routes without AppShell */}
+              <Route path="/" element={<Landing />} />
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Protected routes with AppShell */}
+              <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
+              <Route path="/community" element={<AppShell><Community /></AppShell>} />
+              <Route path="/new-complaint" element={<AppShell><NewComplaint /></AppShell>} />
+              <Route path="/complaint/:id" element={<AppShell><ComplaintDetail /></AppShell>} />
+              <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
+              <Route path="/admin/users" element={<AppShell><AdminUsers /></AppShell>} />
+              
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </NewPostProvider>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

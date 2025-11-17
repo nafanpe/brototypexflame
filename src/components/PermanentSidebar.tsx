@@ -8,12 +8,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useNewPost } from "@/contexts/NewPostContext";
 import logo from "@/assets/brototype-logo.png";
 
 export function PermanentSidebar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { openDialog } = useNewPost();
   const [collapsed, setCollapsed] = useState(false);
   const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -54,8 +56,7 @@ export function PermanentSidebar() {
     if (location.pathname === '/dashboard') {
       navigate("/new-complaint");
     } else if (location.pathname === '/community') {
-      // TODO: Open new post dialog/modal
-      navigate("/community");
+      openDialog();
     }
   };
 

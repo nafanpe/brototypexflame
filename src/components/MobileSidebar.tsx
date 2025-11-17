@@ -11,6 +11,7 @@ import { Menu, LogOut, Home, Plus, Users, Settings } from "lucide-react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useNewPost } from '@/contexts/NewPostContext';
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationBell } from './NotificationBell';
 import brototypeLogo from '@/assets/brototype-logo.png';
@@ -20,6 +21,7 @@ export function MobileSidebar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { openDialog } = useNewPost();
   const [open, setOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -66,7 +68,7 @@ export function MobileSidebar() {
     if (location.pathname === '/dashboard') {
       return { label: 'New Complaint', show: true, action: () => handleNavigate('/new-complaint') };
     } else if (location.pathname === '/community') {
-      return { label: 'New Post', show: true, action: () => handleNavigate('/community') };
+      return { label: 'New Post', show: true, action: () => { setOpen(false); openDialog(); } };
     }
     return { label: '', show: false, action: () => {} };
   };

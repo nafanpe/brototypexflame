@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNewPost } from '@/contexts/NewPostContext';
 import { supabase } from '@/integrations/supabase/client';
+import { NewPostDialog } from '@/components/NewPostDialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -40,13 +42,13 @@ export default function Community() {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isOpen, closeDialog } = useNewPost();
   const [postContent, setPostContent] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
   const [isPosting, setIsPosting] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [topComplaints, setTopComplaints] = useState<Complaint[]>([]);
   const [topPosts, setTopPosts] = useState<Post[]>([]);
 
@@ -227,8 +229,7 @@ export default function Community() {
 
       setPostContent('');
       clearImage();
-      setIsDialogOpen(false);
-      fetchPosts(); // Refresh posts immediately
+      fetchPosts();
       toast({
         title: 'Success',
         description: 'Your post has been published!'
@@ -394,6 +395,13 @@ export default function Community() {
           </div>
         </div>
       </div>
+
+      {/* New Post Dialog - triggered from sidebar */}
+      <NewPostDialog 
+        open={isOpen} 
+        onOpenChange={closeDialog}
+        onPostCreated={fetchPosts}
+      />
     </div>
   );
 }
