@@ -5,7 +5,7 @@ import { NotificationBell } from "./NotificationBell";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/brototype-logo.png";
@@ -13,6 +13,7 @@ import logo from "@/assets/brototype-logo.png";
 export function PermanentSidebar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [userProfile, setUserProfile] = useState<{ full_name: string; avatar_url: string | null } | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -49,9 +50,25 @@ export function PermanentSidebar() {
     await signOut();
   };
 
-  const handleNewComplaint = () => {
-    navigate("/new-complaint");
+  const handlePrimaryAction = () => {
+    if (location.pathname === '/dashboard') {
+      navigate("/new-complaint");
+    } else if (location.pathname === '/community') {
+      // TODO: Open new post dialog/modal
+      navigate("/community");
+    }
   };
+
+  const getPrimaryActionConfig = () => {
+    if (location.pathname === '/dashboard') {
+      return { label: 'New Complaint', show: true };
+    } else if (location.pathname === '/community') {
+      return { label: 'New Post', show: true };
+    }
+    return { label: '', show: false };
+  };
+
+  const actionConfig = getPrimaryActionConfig();
 
   return (
     <aside className={`${collapsed ? 'w-20' : 'w-64'} h-screen bg-sidebar border-r border-sidebar-border flex flex-col sticky top-0 transition-all duration-300`}>
@@ -129,16 +146,18 @@ export function PermanentSidebar() {
         )}
 
         {/* Primary Action Button */}
-        <div className="pt-4">
-          <Button
-            onClick={handleNewComplaint}
-            className={`w-full gap-3 ${collapsed ? 'justify-center px-2' : 'justify-start'}`}
-            size="default"
-          >
-            <Plus className="h-5 w-5" />
-            {!collapsed && <span>New Complaint</span>}
-          </Button>
-        </div>
+        {actionConfig.show && (
+          <div className="pt-4">
+            <Button
+              onClick={handlePrimaryAction}
+              className={`w-full gap-3 ${collapsed ? 'justify-center px-2' : 'justify-start'}`}
+              size="default"
+            >
+              <Plus className="h-5 w-5" />
+              {!collapsed && <span>{actionConfig.label}</span>}
+            </Button>
+          </div>
+        )}
       </nav>
 
       {/* Bottom Section */}
