@@ -2,6 +2,7 @@ import { Home, Users, UserCircle, Plus, LogOut, ChevronLeft, ChevronRight } from
 import { NavLink } from "./NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "./NotificationBell";
+import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useNavigate } from "react-router-dom";
@@ -116,14 +117,9 @@ export function PermanentSidebar() {
 
       {/* Bottom Section */}
       <div className="p-4 border-t border-sidebar-border space-y-2">
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
-          {collapsed ? (
-            <NotificationBell />
-          ) : (
-            <>
-              <NotificationBell />
-            </>
-          )}
+        <div className={`flex items-center gap-2 ${collapsed ? 'flex-col' : 'justify-between'}`}>
+          <NotificationBell />
+          <ThemeToggle />
         </div>
         
         <Button
