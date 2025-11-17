@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AppShell } from "@/components/AppShell";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -23,13 +24,17 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            {/* Public routes without AppShell */}
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/new-complaint" element={<NewComplaint />} />
-            <Route path="/complaint/:id" element={<ComplaintDetail />} />
-            <Route path="/profile" element={<Profile />} />
+            
+            {/* Protected routes with AppShell */}
+            <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
+            <Route path="/community" element={<AppShell><Community /></AppShell>} />
+            <Route path="/new-complaint" element={<AppShell><NewComplaint /></AppShell>} />
+            <Route path="/complaint/:id" element={<AppShell><ComplaintDetail /></AppShell>} />
+            <Route path="/profile" element={<AppShell><Profile /></AppShell>} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

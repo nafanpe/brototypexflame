@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, LogOut, Home, PlusCircle, Users } from "lucide-react";
+import { Menu, LogOut, Home, Plus, Users, UserCircle } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,7 +72,7 @@ export function MobileSidebar() {
             className="justify-start text-base" 
             onClick={() => handleNavigate('/dashboard')}
           >
-            <Home className="mr-2 h-4 w-4" />
+            <Home className="mr-2 h-5 w-5" />
             Dashboard
           </Button>
           <Button 
@@ -80,38 +80,36 @@ export function MobileSidebar() {
             className="justify-start text-base" 
             onClick={() => handleNavigate('/community')}
           >
-            <Users className="mr-2 h-4 w-4" />
+            <Users className="mr-2 h-5 w-5" />
             Community
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="justify-start text-base" 
-            onClick={() => handleNavigate('/new-complaint')}
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Complaint
           </Button>
           <Button 
             variant="ghost" 
             className="justify-start text-base" 
             onClick={() => handleNavigate('/profile')}
           >
-            <Avatar className="mr-2 h-5 w-5">
-              <AvatarImage src={userProfile?.avatar_url || ''} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                {userProfile?.full_name?.charAt(0) || 'U'}
-              </AvatarFallback>
-            </Avatar>
+            <UserCircle className="mr-2 h-5 w-5" />
             Profile
           </Button>
+
+          {/* Primary Action */}
+          <div className="pt-4">
+            <Button 
+              className="w-full justify-start gap-3" 
+              onClick={() => handleNavigate('/new-complaint')}
+            >
+              <Plus className="h-5 w-5" />
+              New Complaint
+            </Button>
+          </div>
         </nav>
 
         <div className="mt-auto border-t pt-4">
           <div className="flex items-center justify-between mb-4">
-            <NotificationBell />
+            <span className="text-sm text-muted-foreground">Theme</span>
             <ThemeToggle />
           </div>
-          <Button variant="outline" onClick={handleSignOut} className="w-full">
+          <Button variant="ghost" onClick={handleSignOut} className="w-full justify-start">
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>

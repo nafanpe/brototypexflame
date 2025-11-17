@@ -259,23 +259,6 @@ export default function ComplaintDetail() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold">Complaint Details</h1>
-                <p className="text-sm text-muted-foreground">{complaint.complaint_number}</p>
-              </div>
-            </div>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <Card className="mb-6">
           <CardHeader>

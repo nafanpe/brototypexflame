@@ -139,20 +139,6 @@ export default function NewComplaint() {
 
   return (
     <div className="min-h-screen bg-background animate-fade-in">
-      <header className="bg-card border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/dashboard')}
-            className="gap-2 hover-highlight"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
-          </Button>
-          <ThemeToggle />
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-8 max-w-3xl">
         <Card className="shadow-card-hover">
           <CardHeader>
