@@ -47,14 +47,17 @@ export function PermanentSidebar() {
       {/* Logo Section with Toggle */}
       <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <button 
+            onClick={() => navigate("/")} 
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
             <img src={logo} alt="Brototype" className="h-8 w-8" />
             {!collapsed && (
               <span className="text-lg font-semibold text-sidebar-foreground">
                 Brototype Connect
               </span>
             )}
-          </div>
+          </button>
           <Button
             variant="ghost"
             size="icon"
