@@ -239,6 +239,7 @@ export type Database = {
       }
       complaints: {
         Row: {
+          admin_only: boolean | null
           assigned_to: string | null
           category: Database["public"]["Enums"]["complaint_category"]
           complaint_number: string
@@ -259,6 +260,7 @@ export type Database = {
           view_count: number
         }
         Insert: {
+          admin_only?: boolean | null
           assigned_to?: string | null
           category: Database["public"]["Enums"]["complaint_category"]
           complaint_number: string
@@ -279,6 +281,7 @@ export type Database = {
           view_count?: number
         }
         Update: {
+          admin_only?: boolean | null
           assigned_to?: string | null
           category?: Database["public"]["Enums"]["complaint_category"]
           complaint_number?: string

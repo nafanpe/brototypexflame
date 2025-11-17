@@ -26,6 +26,7 @@ export default function NewComplaint() {
   const [urgency, setUrgency] = useState('medium');
   const [location, setLocation] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [adminOnly, setAdminOnly] = useState(false);
   const [images, setImages] = useState<File[]>([]);
 
   useEffect(() => {
@@ -87,6 +88,7 @@ export default function NewComplaint() {
           urgency,
           location: location || null,
           is_anonymous: isAnonymous,
+          admin_only: adminOnly,
         },
       });
 
@@ -309,6 +311,20 @@ export default function NewComplaint() {
                   className="cursor-pointer text-sm font-normal"
                 >
                   Submit anonymously (your identity will be hidden from other users)
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="adminOnly"
+                  checked={adminOnly}
+                  onCheckedChange={(checked) => setAdminOnly(checked as boolean)}
+                />
+                <Label
+                  htmlFor="adminOnly"
+                  className="cursor-pointer text-sm font-normal"
+                >
+                  Visible to admins only (enhanced privacy protection)
                 </Label>
               </div>
 
