@@ -206,9 +206,10 @@ All colors MUST be HSL.
   .gradient-text-hover {
     background: linear-gradient(
       to right,
-      hsl(var(--primary)),
-      hsl(var(--muted-foreground)),
-      hsl(var(--primary))
+      hsl(230 90% 65%),
+      hsl(250 90% 70%),
+      hsl(210 90% 65%),
+      hsl(230 90% 65%)
     );
     background-size: 200% auto;
     -webkit-background-clip: text;

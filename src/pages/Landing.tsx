@@ -94,7 +94,7 @@ const Landing = () => {
   };
 
   return (
-    <div className="bg-black text-white" style={{ perspective: "1200px" }}>
+    <div className="bg-background text-foreground" style={{ perspective: "1200px" }}>
       {/* Scroll Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-primary z-50 origin-left"
@@ -148,10 +148,10 @@ const Landing = () => {
           <h1 className="text-6xl md:text-8xl font-bold mb-6 tracking-tight gradient-text-hover">
             Brototype Connect
           </h1>
-          <p className="text-xl md:text-2xl text-gray-400 mb-4 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-muted-foreground mb-4 max-w-2xl mx-auto">
             A direct line. A clear voice.
           </p>
-          <p className="text-lg md:text-xl text-gray-400/80 mb-12 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground/80 mb-12 max-w-2xl mx-auto">
             The official hub for the Brototype Community.
           </p>
           <Button
