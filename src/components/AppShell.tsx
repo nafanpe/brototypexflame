@@ -47,10 +47,15 @@ export function AppShell({ children }: AppShellProps) {
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <MobileSidebar />
-            <img src={logo} alt="Brototype" className="h-7 w-7" />
-            <span className="text-base font-semibold text-sidebar-foreground">
-              Brototype Connect
-            </span>
+            <button 
+              onClick={() => navigate("/")} 
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
+              <img src={logo} alt="Brototype" className="h-7 w-7" />
+              <span className="text-base font-semibold text-sidebar-foreground">
+                Brototype Connect
+              </span>
+            </button>
           </div>
           <div className="flex items-center gap-2">
             <NotificationBell />
