@@ -697,16 +697,23 @@ export default function AdminPanel() {
                 <CardDescription>Staff performance metrics</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={staffPerformance}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="resolved" fill="hsl(var(--chart-1))" name="Resolved" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {staffPerformance.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={staffPerformance}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="resolved" fill="hsl(var(--chart-1))" name="Resolved" />
+                      <Bar dataKey="avgTime" fill="hsl(var(--chart-2))" name="Avg Time (hrs)" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    No staff performance data available
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -721,16 +728,22 @@ export default function AdminPanel() {
               <CardDescription>Average rating over time</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <ReLineChart data={satisfactionTrend}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis domain={[0, 5]} />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="rating" stroke="hsl(var(--chart-2))" strokeWidth={2} name="Rating" />
-                </ReLineChart>
-              </ResponsiveContainer>
+              {satisfactionTrend.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <ReLineChart data={satisfactionTrend}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis domain={[0, 5]} />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="rating" stroke="hsl(var(--chart-1))" strokeWidth={2} name="Rating" />
+                  </ReLineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                  No satisfaction rating data available yet
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
