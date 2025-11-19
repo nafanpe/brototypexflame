@@ -131,14 +131,6 @@ export function MobileSidebar() {
                 <BarChart3 className="mr-2 h-5 w-5" />
                 Admin Panel
               </Button>
-              <Button 
-                variant="ghost" 
-                className="justify-start text-base" 
-                onClick={() => handleNavigate('/admin/users')}
-              >
-                <UserCog className="mr-2 h-5 w-5" />
-                User Directory
-              </Button>
             </>
           )}
 
