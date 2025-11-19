@@ -39,23 +39,45 @@ export function ServerInfoDialog({ open, onOpenChange, server }: ServerInfoDialo
       .from('profiles')
       .select('full_name, avatar_url')
       .eq('id', server.owner_id)
-      .single();
+      .maybeSingle();
     
     if (owner) setOwnerProfile(owner);
 
-    // Fetch members
-    const { data: memberData } = await supabase
-      .from('server_members')
-      .select(`
-        user_id,
-        joined_at,
-        profiles:user_id (full_name, avatar_url)
-      `)
-      .eq('server_id', server.id)
-      .order('joined_at');
+    // If public server, fetch all active users who can access it
+    if (server.is_public) {
+      const { data: allUsers } = await supabase
+        .from('profiles')
+        .select('id, full_name, avatar_url')
+        .eq('is_active', true)
+        .order('full_name');
 
-    if (memberData) {
-      setMembers(memberData as any);
+      if (allUsers) {
+        // Transform to match ServerMember interface
+        const allMembers = allUsers.map(user => ({
+          user_id: user.id,
+          joined_at: new Date().toISOString(),
+          profiles: {
+            full_name: user.full_name,
+            avatar_url: user.avatar_url
+          }
+        }));
+        setMembers(allMembers as any);
+      }
+    } else {
+      // For private servers, only show actual members
+      const { data: memberData } = await supabase
+        .from('server_members')
+        .select(`
+          user_id,
+          joined_at,
+          profiles:user_id (full_name, avatar_url)
+        `)
+        .eq('server_id', server.id)
+        .order('joined_at');
+
+      if (memberData) {
+        setMembers(memberData as any);
+      }
     }
   };
 
@@ -106,8 +128,16 @@ export function ServerInfoDialog({ open, onOpenChange, server }: ServerInfoDialo
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Users className="h-4 w-4" />
-              <span className="font-semibold">Members ({members.length})</span>
+              <span className="font-semibold">
+                {server.is_public ? 'All Users ' : 'Members '}
+                ({members.length})
+              </span>
             </div>
+            {server.is_public && (
+              <p className="text-xs text-muted-foreground pl-6 mb-2">
+                Public server - visible to all users
+              </p>
+            )}
             <ScrollArea className="h-48">
               <div className="space-y-2 pl-6">
                 {members.map((member) => (
