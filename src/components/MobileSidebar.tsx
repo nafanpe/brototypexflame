@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, LogOut, Home, Plus, Users, Settings, UserCog, BarChart3 } from "lucide-react";
+import { Menu, LogOut, Home, Plus, Users, Settings, UserCog, BarChart3, MessageSquare } from "lucide-react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -107,6 +107,14 @@ export function MobileSidebar() {
           >
             <Users className="mr-2 h-5 w-5" />
             Community
+          </Button>
+          <Button 
+            variant="ghost" 
+            className="justify-start text-base" 
+            onClick={() => handleNavigate('/chat')}
+          >
+            <MessageSquare className="mr-2 h-5 w-5" />
+            Chat
           </Button>
           <Button 
             variant="ghost" 
