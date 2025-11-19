@@ -143,14 +143,6 @@ export function PermanentSidebar() {
               <BarChart3 className="h-5 w-5" />
               {!collapsed && <span>Admin Panel</span>}
             </NavLink>
-            <NavLink
-              to="/admin/users"
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
-              activeClassName="bg-sidebar-accent font-medium"
-            >
-              <UserCog className="h-5 w-5" />
-              {!collapsed && <span>User Directory</span>}
-            </NavLink>
           </>
         )}
 
