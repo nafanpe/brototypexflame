@@ -1,4 +1,4 @@
-import { Home, Users, Settings, Plus, LogOut, ChevronLeft, ChevronRight, UserCog } from "lucide-react";
+import { Home, Users, Settings, Plus, LogOut, ChevronLeft, ChevronRight, UserCog, BarChart3 } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "./NotificationBell";
@@ -135,6 +135,14 @@ export function PermanentSidebar() {
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</span>
               </div>
             )}
+            <NavLink
+              to="/admin-panel"
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
+              activeClassName="bg-sidebar-accent font-medium"
+            >
+              <BarChart3 className="h-5 w-5" />
+              {!collapsed && <span>Admin Panel</span>}
+            </NavLink>
             <NavLink
               to="/admin/users"
               className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
