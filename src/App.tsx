@@ -14,6 +14,7 @@ import NewComplaint from "./pages/NewComplaint";
 import ComplaintDetail from "./pages/ComplaintDetail";
 import Settings from "./pages/Settings";
 import AdminUsers from "./pages/admin/Users";
+import AdminPanel from "./pages/admin/AdminPanel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/complaint/:id" element={<AppShell><ComplaintDetail /></AppShell>} />
               <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
               <Route path="/admin/users" element={<AppShell><AdminUsers /></AppShell>} />
+              <Route path="/admin-panel" element={<AppShell><AdminPanel /></AppShell>} />
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

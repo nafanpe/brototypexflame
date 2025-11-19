@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, LogOut, Home, Plus, Users, Settings, UserCog } from "lucide-react";
+import { Menu, LogOut, Home, Plus, Users, Settings, UserCog, BarChart3 } from "lucide-react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -123,6 +123,14 @@ export function MobileSidebar() {
               <div className="px-3 py-2 mt-4">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</span>
               </div>
+              <Button 
+                variant="ghost" 
+                className="justify-start text-base" 
+                onClick={() => handleNavigate('/admin-panel')}
+              >
+                <BarChart3 className="mr-2 h-5 w-5" />
+                Admin Panel
+              </Button>
               <Button 
                 variant="ghost" 
                 className="justify-start text-base" 
