@@ -36,10 +36,12 @@ export function ChatArea({ selectedServer, selectedChannel, selectedDM, isDMMode
   useEffect(() => {
     if (selectedChannel) {
       fetchChannelMessages();
-      subscribeToChannelMessages();
+      const cleanup = subscribeToChannelMessages();
+      return cleanup;
     } else if (selectedDM) {
       fetchDMMessages();
-      subscribeToDMMessages();
+      const cleanup = subscribeToDMMessages();
+      return cleanup;
     }
   }, [selectedChannel, selectedDM]);
 
