@@ -10,6 +10,7 @@ import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Community from "./pages/Community";
+import Chat from "./pages/Chat";
 import NewComplaint from "./pages/NewComplaint";
 import ComplaintDetail from "./pages/ComplaintDetail";
 import Settings from "./pages/Settings";
@@ -35,6 +36,7 @@ const App = () => (
               {/* Protected routes with AppShell */}
               <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
               <Route path="/community" element={<AppShell><Community /></AppShell>} />
+              <Route path="/chat" element={<Chat />} />
               <Route path="/new-complaint" element={<AppShell><NewComplaint /></AppShell>} />
               <Route path="/complaint/:id" element={<AppShell><ComplaintDetail /></AppShell>} />
               <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
