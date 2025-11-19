@@ -78,7 +78,7 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden bg-background">
+    <div className="dark h-screen w-full flex overflow-hidden bg-[#0a0f1a] text-white">
       {/* Pane 1: Server Rail */}
       <ServerRail
         selectedServer={selectedServer}

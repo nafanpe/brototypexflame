@@ -49,7 +49,7 @@ export function ChatArea({ selectedServer, selectedChannel, selectedDM, isDMMode
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   };
 
@@ -172,20 +172,29 @@ export function ChatArea({ selectedServer, selectedChannel, selectedDM, isDMMode
   const handleSendMessage = async (content: string, imageUrl: string | null) => {
     if (!user) return;
 
-    if (selectedChannel) {
-      await supabase.from('channel_messages').insert({
-        channel_id: selectedChannel.id,
-        user_id: user.id,
-        content,
-        image_url: imageUrl
-      });
-    } else if (selectedDM) {
-      await supabase.from('direct_messages').insert({
-        conversation_id: selectedDM.id,
-        sender_id: user.id,
-        content,
-        image_url: imageUrl
-      });
+    try {
+      if (selectedChannel) {
+        const { error } = await supabase.from('channel_messages').insert({
+          channel_id: selectedChannel.id,
+          user_id: user.id,
+          content,
+          image_url: imageUrl
+        });
+        
+        if (error) throw error;
+      } else if (selectedDM) {
+        const { error } = await supabase.from('direct_messages').insert({
+          conversation_id: selectedDM.id,
+          sender_id: user.id,
+          content,
+          image_url: imageUrl
+        });
+        
+        if (error) throw error;
+      }
+    } catch (error: any) {
+      console.error('Send message error:', error);
+      throw error; // Re-throw so MessageInput can handle it
     }
   };
 
