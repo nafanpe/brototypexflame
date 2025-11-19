@@ -369,7 +369,7 @@ export default function ComplaintDetail() {
         )}
 
         {images.length > 0 && (
-          <Card>
+          <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5" />
@@ -400,6 +400,77 @@ export default function ComplaintDetail() {
             </CardContent>
           </Card>
         )}
+
+        {/* Status Timeline */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Status History
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Submitted */}
+              <div className="flex gap-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-3 h-3 rounded-full bg-primary" />
+                  {complaint.updated_at !== complaint.created_at && (
+                    <div className="w-0.5 h-full bg-border my-1" />
+                  )}
+                </div>
+                <div className="flex-1 pb-4">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">Submitted</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {format(new Date(complaint.created_at), 'MMM dd, yyyy · h:mm a')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Last Updated (if different from created) */}
+              {complaint.updated_at !== complaint.created_at && (
+                <div className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className="w-3 h-3 rounded-full bg-primary" />
+                    {complaint.resolved_at && (
+                      <div className="w-0.5 h-full bg-border my-1" />
+                    )}
+                  </div>
+                  <div className="flex-1 pb-4">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">Last Updated</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {format(new Date(complaint.updated_at), 'MMM dd, yyyy · h:mm a')}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Resolved */}
+              {complaint.resolved_at && complaint.status === 'resolved' && (
+                <div className="flex gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span className="font-medium text-green-600 dark:text-green-400">Resolved</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {format(new Date(complaint.resolved_at), 'MMM dd, yyyy · h:mm a')}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

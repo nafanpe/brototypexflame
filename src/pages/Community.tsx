@@ -51,6 +51,7 @@ export default function Community() {
   const [isPosting, setIsPosting] = useState(false);
   const [topComplaints, setTopComplaints] = useState<Complaint[]>([]);
   const [topPosts, setTopPosts] = useState<Post[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     if (!user && !loading) {
@@ -79,8 +80,8 @@ export default function Community() {
     if (data) setUserProfile(data);
   };
 
-  const fetchPosts = async () => {
-    const { data, error } = await supabase
+  const fetchPosts = async (search?: string) => {
+    let query = supabase
       .from('community_posts')
       .select(`
         *,
@@ -88,8 +89,14 @@ export default function Community() {
           full_name,
           avatar_url
         )
-      `)
-      .order('created_at', { ascending: false });
+      `);
+
+    // Apply search filter if query exists
+    if (search && search.trim()) {
+      query = query.ilike('text_content', `%${search.trim()}%`);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching posts:', error);
@@ -319,9 +326,29 @@ export default function Community() {
 
             {/* Posts Feed */}
             <div>
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
-              ))}
+              {posts.length === 0 && searchQuery ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No posts found matching "{searchQuery}"</p>
+                  <Button 
+                    variant="link" 
+                    onClick={() => {
+                      setSearchQuery('');
+                      fetchPosts();
+                    }}
+                    className="mt-2"
+                  >
+                    Clear search
+                  </Button>
+                </div>
+              ) : posts.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No posts yet. Be the first to post!</p>
+                </div>
+              ) : (
+                posts.map((post) => (
+                  <PostCard key={post.id} post={post} onUpdate={() => fetchPosts(searchQuery)} />
+                ))
+              )}
               {posts.length === 0 && (
                 <div className="py-12 text-center border-b border-border dark:border-gray-800 bg-card dark:bg-black">
                   <p className="text-muted-foreground dark:text-gray-500">No posts yet. Be the first to post!</p>
@@ -339,7 +366,11 @@ export default function Community() {
                 <Input
                   placeholder="Search Community"
                   className="pl-10 dark:bg-black dark:border-gray-800 dark:text-white dark:placeholder:text-gray-500"
-                  disabled
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    fetchPosts(e.target.value);
+                  }}
                 />
               </div>
             </div>
