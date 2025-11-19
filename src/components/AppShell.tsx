@@ -1,8 +1,10 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { PermanentSidebar } from "./PermanentSidebar";
 import { MobileSidebar } from "./MobileSidebar";
 import { NotificationBell } from "./NotificationBell";
 import { ThemeToggle } from "./ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/brototype-logo.png";
 
 interface AppShellProps {
@@ -10,6 +12,29 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth', { replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  // Show nothing while checking auth
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render protected content if not authenticated
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="flex min-h-screen w-full">
       {/* Desktop Sidebar - visible on md and up */}

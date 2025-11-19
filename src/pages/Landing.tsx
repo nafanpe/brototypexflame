@@ -29,10 +29,17 @@ const FadeInSection = ({ children, delay = 0 }: { children: React.ReactNode; del
 
 const Landing = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const heroRef = useRef(null);
   const horizontalRef = useRef(null);
   const [contentIndex, setContentIndex] = useState(0);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, loading, navigate]);
 
   const { scrollYProgress: heroScrollProgress } = useScroll({
     target: heroRef,
