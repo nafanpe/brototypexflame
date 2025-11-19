@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Hash, Plus, Info } from 'lucide-react';
+import { Hash, Plus, Info, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -120,6 +120,30 @@ export function ChatSidebar({
     }
   };
 
+  const handleDeleteChannel = async (channelId: string, channelName: string) => {
+    if (!confirm(`Are you sure you want to delete #${channelName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('chat_channels')
+      .delete()
+      .eq('id', channelId);
+
+    if (error) {
+      console.error('Error deleting channel:', error);
+      alert('Failed to delete channel');
+    } else {
+      // If we deleted the currently selected channel, select another one
+      if (selectedChannel?.id === channelId) {
+        const remainingChannels = channels.filter(c => c.id !== channelId);
+        if (remainingChannels.length > 0) {
+          onSelectChannel(remainingChannels[0]);
+        }
+      }
+    }
+  };
+
   if (!isDMMode && !selectedServer) {
     return (
       <div className="w-60 bg-[#0f1419] border-r border-border/50 flex items-center justify-center">
@@ -205,16 +229,34 @@ export function ChatSidebar({
               )}
             </div>
             {channels.map((channel) => (
-              <button
+              <div
                 key={channel.id}
-                onClick={() => onSelectChannel(channel)}
-                className={`w-full px-2 py-2 rounded flex items-center gap-2 hover:bg-accent transition-colors ${
-                  selectedChannel?.id === channel.id ? 'bg-accent text-foreground' : 'text-muted-foreground'
+                className={`w-full px-2 py-2 rounded flex items-center gap-2 transition-colors group ${
+                  selectedChannel?.id === channel.id
+                    ? 'bg-accent text-foreground'
+                    : 'text-muted-foreground hover:bg-accent'
                 }`}
               >
-                <Hash className="h-4 w-4" />
-                <span className="text-sm">{channel.name}</span>
-              </button>
+                <button
+                  onClick={() => onSelectChannel(channel)}
+                  className="flex items-center gap-2 flex-1 min-w-0"
+                >
+                  <Hash className="h-4 w-4 flex-shrink-0" />
+                  <span className="text-sm truncate">{channel.name}</span>
+                </button>
+                {isOwner && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteChannel(channel.id, channel.name);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded transition-opacity"
+                    title="Delete channel"
+                  >
+                    <X className="h-3 w-3 text-destructive" />
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
