@@ -3,6 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Hash, Volume2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -20,6 +22,7 @@ export function CreateChannelDialog({
   onChannelCreated
 }: CreateChannelDialogProps) {
   const [name, setName] = useState('');
+  const [channelType, setChannelType] = useState<'text' | 'voice'>('text');
   const [isCreating, setIsCreating] = useState(false);
 
   const handleCreate = async () => {
@@ -31,13 +34,15 @@ export function CreateChannelDialog({
         .from('chat_channels')
         .insert({
           server_id: serverId,
-          name: name.trim().toLowerCase().replace(/\s+/g, '-')
+          name: name.trim().toLowerCase().replace(/\s+/g, '-'),
+          type: channelType
         });
 
       if (error) throw error;
 
       toast.success('Channel created!');
       setName('');
+      setChannelType('text');
       onChannelCreated();
       onOpenChange(false);
     } catch (error: any) {
@@ -53,17 +58,43 @@ export function CreateChannelDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Channel</DialogTitle>
-          <DialogDescription>Add a new text channel to your server</DialogDescription>
+          <DialogDescription>Add a new channel to your server</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
+          <div>
+            <Label>Channel Type</Label>
+            <RadioGroup value={channelType} onValueChange={(value: 'text' | 'voice') => setChannelType(value)}>
+              <div className="flex items-center space-x-2 p-3 rounded-md border border-border hover:bg-accent/50 cursor-pointer">
+                <RadioGroupItem value="text" id="text" />
+                <Label htmlFor="text" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <Hash className="w-4 h-4" />
+                  <div>
+                    <div className="font-medium">Text</div>
+                    <div className="text-xs text-muted-foreground">Send messages, images, and links</div>
+                  </div>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 rounded-md border border-border hover:bg-accent/50 cursor-pointer">
+                <RadioGroupItem value="voice" id="voice" />
+                <Label htmlFor="voice" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <Volume2 className="w-4 h-4" />
+                  <div>
+                    <div className="font-medium">Voice</div>
+                    <div className="text-xs text-muted-foreground">Speak with voice in real-time</div>
+                  </div>
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
           <div>
             <Label htmlFor="channel-name">Channel Name *</Label>
             <Input
               id="channel-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., frontend, backend, random"
+              placeholder={channelType === 'text' ? 'e.g., general, random' : 'e.g., voice-chat, hangout'}
               maxLength={30}
             />
             <p className="text-xs text-muted-foreground mt-1">

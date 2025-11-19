@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Hash, Plus, Info, X } from 'lucide-react';
+import { Hash, Plus, Info, X, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -212,52 +212,94 @@ export function ChatSidebar({
             )}
           </div>
         ) : (
-          <div className="p-2 space-y-1">
-            <div className="px-2 py-1 flex items-center justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase">
-                Text Channels
-              </span>
-              {isOwner && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-5 w-5"
-                  onClick={() => setIsCreateChannelOpen(true)}
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
-              )}
-            </div>
-            {channels.map((channel) => (
-              <div
-                key={channel.id}
-                className={`w-full px-2 py-2 rounded flex items-center gap-2 transition-colors group ${
-                  selectedChannel?.id === channel.id
-                    ? 'bg-accent text-foreground'
-                    : 'text-muted-foreground hover:bg-accent'
-                }`}
-              >
-                <button
-                  onClick={() => onSelectChannel(channel)}
-                  className="flex items-center gap-2 flex-1 min-w-0"
-                >
-                  <Hash className="h-4 w-4 flex-shrink-0" />
-                  <span className="text-sm truncate">{channel.name}</span>
-                </button>
+          <div className="p-2 space-y-4">
+            {/* Text Channels Section */}
+            <div className="space-y-1">
+              <div className="px-2 py-1 flex items-center justify-between">
+                <span className="text-xs font-semibold text-muted-foreground uppercase">
+                  Text Channels
+                </span>
                 {isOwner && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteChannel(channel.id, channel.name);
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded transition-opacity"
-                    title="Delete channel"
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5"
+                    onClick={() => setIsCreateChannelOpen(true)}
                   >
-                    <X className="h-3 w-3 text-destructive" />
-                  </button>
+                    <Plus className="h-3 w-3" />
+                  </Button>
                 )}
               </div>
-            ))}
+              {channels.filter(ch => ch.type === 'text' || !ch.type).map((channel) => (
+                <div
+                  key={channel.id}
+                  className={`w-full px-2 py-2 rounded flex items-center gap-2 transition-colors group ${
+                    selectedChannel?.id === channel.id
+                      ? 'bg-accent text-foreground'
+                      : 'text-muted-foreground hover:bg-accent'
+                  }`}
+                >
+                  <button
+                    onClick={() => onSelectChannel(channel)}
+                    className="flex items-center gap-2 flex-1 min-w-0"
+                  >
+                    <Hash className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm truncate">{channel.name}</span>
+                  </button>
+                  {isOwner && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteChannel(channel.id, channel.name);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded transition-opacity"
+                      title="Delete channel"
+                    >
+                      <X className="h-3 w-3 text-destructive" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Voice Channels Section */}
+            <div className="space-y-1">
+              <div className="px-2 py-1 flex items-center justify-between">
+                <span className="text-xs font-semibold text-muted-foreground uppercase">
+                  Voice Channels
+                </span>
+              </div>
+              {channels.filter(ch => ch.type === 'voice').map((channel) => (
+                <div
+                  key={channel.id}
+                  className={`w-full px-2 py-2 rounded flex items-center gap-2 transition-colors group ${
+                    selectedChannel?.id === channel.id
+                      ? 'bg-accent text-foreground'
+                      : 'text-muted-foreground hover:bg-accent'
+                  }`}
+                >
+                  <button
+                    onClick={() => onSelectChannel(channel)}
+                    className="flex items-center gap-2 flex-1 min-w-0"
+                  >
+                    <Volume2 className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm truncate">{channel.name}</span>
+                  </button>
+                  {isOwner && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteChannel(channel.id, channel.name);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-destructive/10 rounded transition-opacity"
+                      title="Delete channel"
+                    >
+                      <X className="h-3 w-3 text-destructive" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </ScrollArea>
