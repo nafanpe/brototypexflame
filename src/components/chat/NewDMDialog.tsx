@@ -64,6 +64,22 @@ export function NewDMDialog({ open, onOpenChange, onConversationCreated }: NewDM
       // Ensure user1_id < user2_id for the unique constraint
       const [user1, user2] = [user.id, selectedUser.id].sort();
 
+      // Check if conversation already exists
+      const { data: existingConversation } = await supabase
+        .from('dm_conversations')
+        .select('id')
+        .or(`and(user1_id.eq.${user1},user2_id.eq.${user2}),and(user1_id.eq.${user2},user2_id.eq.${user1})`)
+        .maybeSingle();
+
+      if (existingConversation) {
+        toast.success(`Conversation with ${selectedUser.full_name} already exists`);
+        onConversationCreated();
+        onOpenChange(false);
+        setSearchQuery('');
+        return;
+      }
+
+      // Create new conversation
       const { error } = await supabase
         .from('dm_conversations')
         .insert({
@@ -71,10 +87,7 @@ export function NewDMDialog({ open, onOpenChange, onConversationCreated }: NewDM
           user2_id: user2
         });
 
-      if (error && error.code !== '23505') {
-        // Ignore duplicate key error
-        throw error;
-      }
+      if (error) throw error;
 
       toast.success(`Started conversation with ${selectedUser.full_name}`);
       onConversationCreated();
@@ -82,7 +95,7 @@ export function NewDMDialog({ open, onOpenChange, onConversationCreated }: NewDM
       setSearchQuery('');
     } catch (error: any) {
       toast.error('Failed to start conversation');
-      console.error(error);
+      console.error('DM creation error:', error);
     }
   };
 

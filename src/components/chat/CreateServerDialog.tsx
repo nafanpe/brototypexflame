@@ -74,10 +74,12 @@ export function CreateServerDialog({ open, onOpenChange, onServerCreated }: Crea
       setName('');
       setIconFile(null);
       setIconPreview(null);
-      onServerCreated();
+      setIsPublic(true);
+      onServerCreated(); // This triggers fetchUserServers in ServerRail
       onOpenChange(false);
     } catch (error: any) {
       toast.error('Failed to create server');
+      console.error('Server creation error:', error);
       console.error(error);
     } finally {
       setIsCreating(false);

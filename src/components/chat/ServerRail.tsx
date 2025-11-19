@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, Plus } from 'lucide-react';
+import { MessageSquare, Plus, LayoutDashboard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { CreateServerDialog } from './CreateServerDialog';
 import { ChatServer } from '@/pages/Chat';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -17,6 +18,7 @@ interface ServerRailProps {
 
 export function ServerRail({ selectedServer, onSelectServer, onDMMode, isDMMode }: ServerRailProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [servers, setServers] = useState<ChatServer[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -52,9 +54,22 @@ export function ServerRail({ selectedServer, onSelectServer, onDMMode, isDMMode 
   };
 
   const subscribeToServers = () => {
+    // Subscribe to server_members changes to detect when user joins a server
     const channel = supabase
       .channel('server-updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_servers' }, () => {
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'server_members',
+        filter: `user_id=eq.${user?.id}`
+      }, () => {
+        fetchUserServers();
+      })
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'chat_servers' 
+      }, () => {
         fetchUserServers();
       })
       .subscribe();
@@ -67,6 +82,25 @@ export function ServerRail({ selectedServer, onSelectServer, onDMMode, isDMMode 
   return (
     <div className="w-[72px] bg-[#0a0f1a] flex flex-col items-center py-3 gap-2 border-r border-border/50">
       <TooltipProvider delayDuration={0}>
+        {/* Dashboard/Home Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-12 w-12 rounded-full bg-[#1a1f2e] hover:bg-primary/20"
+              onClick={() => navigate('/dashboard')}
+            >
+              <LayoutDashboard className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            <p>Dashboard</p>
+          </TooltipContent>
+        </Tooltip>
+
+        <div className="w-8 h-[2px] bg-border/50 rounded-full my-1" />
+
         {/* DM Button */}
         <Tooltip>
           <TooltipTrigger asChild>

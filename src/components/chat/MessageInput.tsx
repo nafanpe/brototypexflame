@@ -35,6 +35,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
   };
 
   const handleSend = async () => {
+    // Prevent sending empty messages
     if (!content.trim() && !selectedImage) return;
 
     setIsSending(true);
@@ -62,8 +63,13 @@ export function MessageInput({ onSend }: MessageInputProps) {
       setContent('');
       clearImage();
     } catch (error: any) {
-      toast.error('Failed to send message');
-      console.error(error);
+      // Handle RLS policy violations and other errors
+      if (error.code === '42501' || error.message?.includes('policy')) {
+        toast.error('You do not have permission to send messages here');
+      } else {
+        toast.error('Failed to send message');
+      }
+      console.error('Message send error:', error);
     } finally {
       setIsSending(false);
     }
