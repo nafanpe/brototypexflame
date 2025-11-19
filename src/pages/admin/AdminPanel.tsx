@@ -5,12 +5,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, TrendingUp, MessageSquare, Clock, BarChart3, PieChart, LineChart } from 'lucide-react';
+import { Users, TrendingUp, MessageSquare, Clock, BarChart3, PieChart, LineChart, RefreshCw, Download, Pencil, MessageCircle } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart as RePieChart, Pie, Cell, LineChart as ReLineChart, Line } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface KPIData {
   totalUsers: number;
@@ -52,12 +54,23 @@ interface UserProfile {
   role?: string;
 }
 
+interface ActivityDay {
+  date: string;
+  count: number;
+}
+
+interface TrendingTopic {
+  word: string;
+  count: number;
+}
+
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export default function AdminPanel() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [kpiData, setKpiData] = useState<KPIData>({
     totalUsers: 0,
     platformHealth: 0,
@@ -71,6 +84,9 @@ export default function AdminPanel() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activityHeatmap, setActivityHeatmap] = useState<ActivityDay[]>([]);
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   useEffect(() => {
     if (!user) {
@@ -107,9 +123,19 @@ export default function AdminPanel() {
       fetchStaffPerformance(),
       fetchSatisfactionTrend(),
       fetchTopContributors(),
-      fetchUsers()
+      fetchUsers(),
+      fetchActivityHeatmap(),
+      fetchTrendingTopics()
     ]);
     setLoading(false);
+    setLastUpdated(new Date());
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchAllData();
+    setRefreshing(false);
+    toast.success('Data refreshed');
   };
 
   const fetchKPIData = async () => {
@@ -327,6 +353,93 @@ export default function AdminPanel() {
     }
   };
 
+  const fetchActivityHeatmap = async () => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const { data: complaints } = await supabase
+      .from('complaints')
+      .select('created_at')
+      .gte('created_at', thirtyDaysAgo.toISOString());
+
+    const { data: posts } = await supabase
+      .from('community_posts')
+      .select('created_at')
+      .gte('created_at', thirtyDaysAgo.toISOString());
+
+    const activityMap: { [key: string]: number } = {};
+
+    // Initialize all 30 days with 0
+    for (let i = 0; i < 30; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      activityMap[dateStr] = 0;
+    }
+
+    // Count complaints
+    complaints?.forEach(c => {
+      const dateStr = c.created_at.split('T')[0];
+      if (activityMap[dateStr] !== undefined) {
+        activityMap[dateStr] += 1;
+      }
+    });
+
+    // Count posts
+    posts?.forEach(p => {
+      const dateStr = p.created_at.split('T')[0];
+      if (activityMap[dateStr] !== undefined) {
+        activityMap[dateStr] += 1;
+      }
+    });
+
+    const heatmapData = Object.entries(activityMap)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    setActivityHeatmap(heatmapData);
+  };
+
+  const fetchTrendingTopics = async () => {
+    const { data: posts } = await supabase
+      .from('community_posts')
+      .select('text_content')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (!posts) return;
+
+    // Stop words to filter out
+    const stopWords = new Set([
+      'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i',
+      'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at',
+      'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she',
+      'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their', 'is',
+      'are', 'was', 'were', 'been', 'has', 'had', 'can', 'could', 'should', 'would'
+    ]);
+
+    const wordCount: { [key: string]: number } = {};
+
+    posts.forEach(post => {
+      const words = post.text_content
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .split(/\s+/)
+        .filter(word => word.length > 3 && !stopWords.has(word));
+
+      words.forEach(word => {
+        wordCount[word] = (wordCount[word] || 0) + 1;
+      });
+    });
+
+    const topWords = Object.entries(wordCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([word, count]) => ({ word, count }));
+
+    setTrendingTopics(topWords);
+  };
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     if (!query.trim()) {
@@ -352,21 +465,81 @@ export default function AdminPanel() {
     }
   };
 
+  const getActivityColor = (count: number) => {
+    if (count === 0) return 'bg-secondary';
+    if (count <= 2) return 'bg-primary/30';
+    if (count <= 5) return 'bg-primary/60';
+    return 'bg-primary';
+  };
+
+  const exportComplaintsCSV = async () => {
+    const { data: complaints } = await supabase
+      .from('complaints')
+      .select('id, complaint_number, title, category, status, urgency, created_at, resolved_at')
+      .order('created_at', { ascending: false });
+
+    if (!complaints) {
+      toast.error('No data to export');
+      return;
+    }
+
+    const headers = ['ID', 'Number', 'Title', 'Category', 'Status', 'Urgency', 'Created', 'Resolved'];
+    const rows = complaints.map(c => [
+      c.id,
+      c.complaint_number,
+      c.title,
+      c.category,
+      c.status,
+      c.urgency,
+      new Date(c.created_at).toLocaleDateString(),
+      c.resolved_at ? new Date(c.resolved_at).toLocaleDateString() : 'N/A'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `complaints_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast.success('CSV exported successfully');
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="container mx-auto p-6 space-y-6">
+        <Skeleton className="h-12 w-64" />
+        <div className="grid gap-4 md:grid-cols-4">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+          <Skeleton className="h-32" />
+        </div>
+        <Skeleton className="h-96" />
       </div>
     );
   }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Super Admin Panel</h1>
-          <p className="text-muted-foreground">Strategic oversight & platform analytics</p>
+          <p className="text-muted-foreground">Strategic oversight and analytics dashboard</p>
+          <p className="text-xs text-muted-foreground mt-1">Last updated: {lastUpdated.toLocaleTimeString()}</p>
         </div>
+        <Button onClick={handleRefresh} disabled={refreshing} variant="outline">
+          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh Data
+        </Button>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
@@ -426,20 +599,60 @@ export default function AdminPanel() {
             </Card>
           </div>
 
-          {/* Activity Overview */}
+          {/* Activity Heatmap */}
           <Card>
             <CardHeader>
-              <CardTitle>Platform Activity Overview</CardTitle>
-              <CardDescription>Key metrics at a glance</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Activity Heatmap (Last 30 Days)
+              </CardTitle>
+              <CardDescription>Daily platform activity including complaints and community posts</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Activity heatmap coming soon...</p>
+              <div className="grid grid-cols-10 gap-2">
+                {activityHeatmap.map((day, index) => (
+                  <div
+                    key={index}
+                    className={`aspect-square rounded ${getActivityColor(day.count)} transition-colors cursor-pointer`}
+                    title={`${new Date(day.date).toLocaleDateString()}: ${day.count} activities`}
+                  />
+                ))}
+              </div>
+              <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded bg-secondary" />
+                  <span>None</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded bg-primary/30" />
+                  <span>1-2</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded bg-primary/60" />
+                  <span>3-5</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded bg-primary" />
+                  <span>6+</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Tab 2: Complaint Analytics */}
+        {/* Complaint Analytics Tab */}
         <TabsContent value="complaints" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Deep Dive Analytics</h2>
+              <p className="text-muted-foreground">Detailed breakdown of complaint patterns and resolution</p>
+            </div>
+            <Button onClick={exportComplaintsCSV} variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+          </div>
+
           <div className="grid gap-6 md:grid-cols-2">
             {/* Problem Areas - Donut Chart */}
             <Card>
@@ -522,52 +735,75 @@ export default function AdminPanel() {
           </Card>
         </TabsContent>
 
-        {/* Tab 3: Community Pulse */}
+        {/* Community Pulse Tab */}
         <TabsContent value="community" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Contributors</CardTitle>
-              <CardDescription>Most engaged community members</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead className="text-center">Posts</TableHead>
-                    <TableHead className="text-center">Total Likes</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {topContributors.map((contributor) => (
-                    <TableRow key={contributor.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={contributor.avatar_url || ''} />
-                            <AvatarFallback>{contributor.full_name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <span>{contributor.full_name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">{contributor.posts}</TableCell>
-                      <TableCell className="text-center">{contributor.totalLikes}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <h2 className="text-2xl font-bold">Social Data Insights</h2>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Engagement Metrics</CardTitle>
-              <CardDescription>Community health indicators</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Trending topics & engagement rate coming soon...</p>
-            </CardContent>
-          </Card>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Top Contributors */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Contributors</CardTitle>
+                <CardDescription>Most active community members</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {topContributors.length > 0 ? (
+                  <div className="space-y-4">
+                    {topContributors.map((contributor, index) => (
+                      <div key={contributor.id} className="flex items-center gap-4">
+                        <div className="font-bold text-muted-foreground w-6">{index + 1}.</div>
+                        <Avatar>
+                          <AvatarImage src={contributor.avatar_url || ''} />
+                          <AvatarFallback>{contributor.full_name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="font-medium">{contributor.full_name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {contributor.posts} posts • {contributor.totalLikes} total likes
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground py-8">
+                    No community activity yet
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Trending Topics */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Trending Topics</CardTitle>
+                <CardDescription>Most discussed keywords in posts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {trendingTopics.length > 0 ? (
+                  <div className="space-y-3">
+                    {trendingTopics.map((topic, index) => (
+                      <div key={topic.word} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="font-bold text-muted-foreground w-6">{index + 1}.</div>
+                          <Badge variant="secondary" className="text-sm">
+                            #{topic.word}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {topic.count} mentions
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground py-8">
+                    No trending topics found
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         {/* Tab 4: User Management */}
