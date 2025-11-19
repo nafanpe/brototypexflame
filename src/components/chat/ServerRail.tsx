@@ -33,28 +33,19 @@ export function ServerRail({ selectedServer, onSelectServer, onDMMode, isDMMode 
     if (!user?.id) return;
 
     try {
-      // First get the server IDs the user is a member of
-      const { data: memberData, error: memberError } = await supabase
+      // Fetch all public servers OR servers where user is a member
+      const { data: memberData } = await supabase
         .from('server_members')
         .select('server_id')
         .eq('user_id', user.id);
 
-      if (memberError) {
-        console.error('Error fetching server members:', memberError);
-        return;
-      }
+      const memberServerIds = memberData?.map((m) => m.server_id) || [];
 
-      if (!memberData || memberData.length === 0) {
-        setServers([]);
-        return;
-      }
-
-      const serverIds = memberData.map((m) => m.server_id);
-
+      // Fetch servers: all public servers + servers user is a member of (even if private)
       const { data, error } = await supabase
         .from('chat_servers')
         .select('*')
-        .in('id', serverIds);
+        .or(`is_public.eq.true,id.in.(${memberServerIds.length > 0 ? memberServerIds.join(',') : '00000000-0000-0000-0000-000000000000'})`);
 
       if (error) {
         console.error('Error fetching servers:', error);
