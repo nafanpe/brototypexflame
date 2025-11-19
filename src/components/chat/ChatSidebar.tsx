@@ -268,6 +268,16 @@ export function ChatSidebar({
                 <span className="text-xs font-semibold text-muted-foreground uppercase">
                   Voice Channels
                 </span>
+                {isOwner && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5"
+                    onClick={() => setIsCreateChannelOpen(true)}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
               {channels.filter(ch => ch.type === 'voice').map((channel) => (
                 <div
