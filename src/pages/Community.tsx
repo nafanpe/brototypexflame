@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PostCard } from '@/components/PostCard';
 import { useToast } from '@/hooks/use-toast';
-import { User, LogOut, Search, TrendingUp, ArrowLeft, Image as ImageIcon, X, PlusCircle } from 'lucide-react';
+import { User, LogOut, Search, TrendingUp, ArrowLeft, Image as ImageIcon, X, PlusCircle, Hash } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { NotificationBell } from '@/components/NotificationBell';
 import { MobileSidebar } from '@/components/MobileSidebar';
@@ -38,6 +39,11 @@ interface Complaint {
   upvote_count: number;
 }
 
+interface TrendingTopic {
+  word: string;
+  count: number;
+}
+
 export default function Community() {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
@@ -52,6 +58,7 @@ export default function Community() {
   const [topComplaints, setTopComplaints] = useState<Complaint[]>([]);
   const [topPosts, setTopPosts] = useState<Post[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
 
   useEffect(() => {
     if (!user && !loading) {
@@ -64,6 +71,7 @@ export default function Community() {
       fetchPosts();
       fetchTopComplaints();
       fetchTopPosts();
+      fetchTrendingTopics();
       subscribeToRealtimePosts();
     }
   }, [user, loading]);
@@ -138,6 +146,46 @@ export default function Community() {
     } else {
       setTopPosts(data || []);
     }
+  };
+
+  const fetchTrendingTopics = async () => {
+    const { data: posts } = await supabase
+      .from('community_posts')
+      .select('text_content')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (!posts) return;
+
+    // Stop words to filter out
+    const stopWords = new Set([
+      'the', 'be', 'to', 'of', 'and', 'a', 'in', 'that', 'have', 'i',
+      'it', 'for', 'not', 'on', 'with', 'he', 'as', 'you', 'do', 'at',
+      'this', 'but', 'his', 'by', 'from', 'they', 'we', 'say', 'her', 'she',
+      'or', 'an', 'will', 'my', 'one', 'all', 'would', 'there', 'their', 'is',
+      'are', 'was', 'were', 'been', 'has', 'had', 'can', 'could', 'should', 'would'
+    ]);
+
+    const wordCount: { [key: string]: number } = {};
+
+    posts.forEach(post => {
+      const words = post.text_content
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .split(/\s+/)
+        .filter(word => word.length > 3 && !stopWords.has(word));
+
+      words.forEach(word => {
+        wordCount[word] = (wordCount[word] || 0) + 1;
+      });
+    });
+
+    const topWords = Object.entries(wordCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([word, count]) => ({ word, count }));
+
+    setTrendingTopics(topWords);
   };
 
   const subscribeToRealtimePosts = () => {
@@ -373,6 +421,33 @@ export default function Community() {
                   }}
                 />
               </div>
+            </div>
+
+            {/* Trending Topics */}
+            <div className="bg-card dark:bg-black border border-border dark:border-gray-800 rounded-lg p-4">
+              <h3 className="font-semibold flex items-center gap-2 mb-4 text-foreground dark:text-white">
+                <Hash className="h-4 w-4" />
+                Trending Topics
+              </h3>
+              {trendingTopics.length > 0 ? (
+                <div className="space-y-3">
+                  {trendingTopics.map((topic, index) => (
+                    <div key={topic.word} className="flex items-center justify-between py-2 hover:bg-accent dark:hover:bg-gray-900 rounded-md px-2 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-muted-foreground dark:text-gray-500 text-sm w-6">{index + 1}.</span>
+                        <Badge variant="secondary" className="text-sm">
+                          #{topic.word}
+                        </Badge>
+                      </div>
+                      <span className="text-xs text-muted-foreground dark:text-gray-500">
+                        {topic.count} {topic.count === 1 ? 'mention' : 'mentions'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground dark:text-gray-500 text-center py-2">No trending topics yet</p>
+              )}
             </div>
 
             {/* Top Posts */}
