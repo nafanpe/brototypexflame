@@ -11,6 +11,7 @@ export interface ChatServer {
   icon_url: string | null;
   owner_id: string;
   is_public: boolean;
+  created_at: string;
 }
 
 export interface ChatChannel {
