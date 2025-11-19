@@ -30,26 +30,42 @@ export function ServerRail({ selectedServer, onSelectServer, onDMMode, isDMMode 
   }, [user]);
 
   const fetchUserServers = async () => {
-    // First get the server IDs the user is a member of
-    const { data: memberData } = await supabase
-      .from('server_members')
-      .select('server_id')
-      .eq('user_id', user?.id || '');
+    if (!user?.id) return;
 
-    if (!memberData || memberData.length === 0) {
-      setServers([]);
-      return;
-    }
+    try {
+      // First get the server IDs the user is a member of
+      const { data: memberData, error: memberError } = await supabase
+        .from('server_members')
+        .select('server_id')
+        .eq('user_id', user.id);
 
-    const serverIds = memberData.map((m) => m.server_id);
+      if (memberError) {
+        console.error('Error fetching server members:', memberError);
+        return;
+      }
 
-    const { data, error } = await supabase
-      .from('chat_servers')
-      .select('*')
-      .in('id', serverIds);
+      if (!memberData || memberData.length === 0) {
+        setServers([]);
+        return;
+      }
 
-    if (!error && data) {
-      setServers(data);
+      const serverIds = memberData.map((m) => m.server_id);
+
+      const { data, error } = await supabase
+        .from('chat_servers')
+        .select('*')
+        .in('id', serverIds);
+
+      if (error) {
+        console.error('Error fetching servers:', error);
+        return;
+      }
+
+      if (data) {
+        setServers(data);
+      }
+    } catch (error) {
+      console.error('Unexpected error fetching servers:', error);
     }
   };
 
