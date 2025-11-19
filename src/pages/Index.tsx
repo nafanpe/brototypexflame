@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import brototypeLogo from '@/assets/brototype-logo.png';
@@ -8,14 +7,7 @@ import { ArrowRight, CheckCircle, Shield, Zap } from 'lucide-react';
 
 export default function Index() {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (!loading && user) {
-      navigate('/dashboard', { replace: true });
-    }
-  }, [user, loading, navigate]);
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
