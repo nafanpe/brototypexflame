@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Hash, Plus, Settings } from 'lucide-react';
+import { Hash, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChatServer, ChatChannel, DMConversation } from '@/pages/Chat';
 import { NewDMDialog } from './NewDMDialog';
 import { CreateChannelDialog } from './CreateChannelDialog';
+import { ServerInfoDialog } from './ServerInfoDialog';
 
 interface ChatSidebarProps {
   selectedServer: ChatServer | null;
@@ -31,14 +32,40 @@ export function ChatSidebar({
   const [conversations, setConversations] = useState<DMConversation[]>([]);
   const [isNewDMOpen, setIsNewDMOpen] = useState(false);
   const [isCreateChannelOpen, setIsCreateChannelOpen] = useState(false);
+  const [isServerInfoOpen, setIsServerInfoOpen] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
     if (selectedServer) {
       fetchChannels();
       setIsOwner(selectedServer.owner_id === user?.id);
+      subscribeToChannels();
     }
   }, [selectedServer, user]);
+
+  const subscribeToChannels = () => {
+    if (!selectedServer) return;
+
+    const channel = supabase
+      .channel(`server-${selectedServer.id}-channels`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_channels',
+          filter: `server_id=eq.${selectedServer.id}`
+        },
+        () => {
+          fetchChannels();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
 
   useEffect(() => {
     if (isDMMode && user) {
@@ -117,7 +144,7 @@ export function ChatSidebar({
           >
             <Plus className="h-4 w-4" />
           </Button>
-        ) : isOwner && (
+        ) : isOwner ? (
           <Button
             variant="ghost"
             size="icon"
@@ -125,6 +152,15 @@ export function ChatSidebar({
             onClick={() => setIsCreateChannelOpen(true)}
           >
             <Plus className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => setIsServerInfoOpen(true)}
+          >
+            <Info className="h-4 w-4" />
           </Button>
         )}
       </div>
@@ -192,6 +228,12 @@ export function ChatSidebar({
         onOpenChange={setIsCreateChannelOpen}
         serverId={selectedServer?.id || ''}
         onChannelCreated={fetchChannels}
+      />
+
+      <ServerInfoDialog
+        open={isServerInfoOpen}
+        onOpenChange={setIsServerInfoOpen}
+        server={selectedServer}
       />
     </div>
   );
