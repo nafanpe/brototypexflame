@@ -39,7 +39,7 @@ export function ChatSidebar({
     if (selectedServer) {
       fetchChannels();
       setIsOwner(selectedServer.owner_id === user?.id);
-      subscribeToChannels();
+      return subscribeToChannels();
     }
   }, [selectedServer, user]);
 
@@ -144,15 +144,6 @@ export function ChatSidebar({
           >
             <Plus className="h-4 w-4" />
           </Button>
-        ) : isOwner ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={() => setIsCreateChannelOpen(true)}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
         ) : (
           <Button
             variant="ghost"
@@ -198,8 +189,20 @@ export function ChatSidebar({
           </div>
         ) : (
           <div className="p-2 space-y-1">
-            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
-              Text Channels
+            <div className="px-2 py-1 flex items-center justify-between">
+              <span className="text-xs font-semibold text-muted-foreground uppercase">
+                Text Channels
+              </span>
+              {isOwner && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5"
+                  onClick={() => setIsCreateChannelOpen(true)}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              )}
             </div>
             {channels.map((channel) => (
               <button
