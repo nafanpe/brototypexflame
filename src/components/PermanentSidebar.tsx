@@ -1,4 +1,4 @@
-import { Home, Users, Settings, Plus, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Users, Settings, Plus, LogOut, ChevronLeft, ChevronRight, UserCog } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "./NotificationBell";
@@ -140,7 +140,7 @@ export function PermanentSidebar() {
               className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
               activeClassName="bg-sidebar-accent font-medium"
             >
-              <Users className="h-5 w-5" />
+              <UserCog className="h-5 w-5" />
               {!collapsed && <span>User Directory</span>}
             </NavLink>
           </>
