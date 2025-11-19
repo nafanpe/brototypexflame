@@ -6,6 +6,7 @@ import { Hash, User } from 'lucide-react';
 import { ChatServer, ChatChannel, DMConversation } from '@/pages/Chat';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
+import { VoiceChannel } from './VoiceChannel';
 
 interface ChatAreaProps {
   selectedServer: ChatServer | null;
@@ -206,6 +207,15 @@ export function ChatArea({ selectedServer, selectedChannel, selectedDM, isDMMode
         <p className="text-muted-foreground">
           {isDMMode ? 'Select a conversation or start a new DM' : 'Select a channel to start chatting'}
         </p>
+      </div>
+    );
+  }
+
+  // Show voice channel interface for voice channels
+  if (selectedChannel?.type === 'voice') {
+    return (
+      <div className="flex-1">
+        <VoiceChannel channelId={selectedChannel.id} channelName={selectedChannel.name} />
       </div>
     );
   }
