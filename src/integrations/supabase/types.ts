@@ -14,6 +14,115 @@ export type Database = {
   }
   public: {
     Tables: {
+      channel_messages: {
+        Row: {
+          channel_id: string
+          content: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_messages_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chat_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "channel_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_channels: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          server_id: string
+          type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          server_id: string
+          type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          server_id?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_channels_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "chat_servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_servers: {
+        Row: {
+          created_at: string | null
+          icon_url: string | null
+          id: string
+          is_public: boolean | null
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          icon_url?: string | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string | null
+          icon_url?: string | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_servers_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_comments: {
         Row: {
           created_at: string
@@ -318,6 +427,87 @@ export type Database = {
           },
         ]
       }
+      direct_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "dm_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dm_conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_message_at: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_conversations_user1_id_fkey"
+            columns: ["user1_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dm_conversations_user2_id_fkey"
+            columns: ["user2_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           complaint_id: string | null
@@ -419,6 +609,39 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      server_members: {
+        Row: {
+          joined_at: string | null
+          server_id: string
+          user_id: string
+        }
+        Insert: {
+          joined_at?: string | null
+          server_id: string
+          user_id: string
+        }
+        Update: {
+          joined_at?: string | null
+          server_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_members_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "chat_servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       settings: {
         Row: {

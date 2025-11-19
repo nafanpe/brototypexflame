@@ -1,4 +1,4 @@
-import { Home, Users, Settings, Plus, LogOut, ChevronLeft, ChevronRight, UserCog, BarChart3 } from "lucide-react";
+import { Home, Users, Settings, Plus, LogOut, ChevronLeft, ChevronRight, UserCog, BarChart3, MessageSquare } from "lucide-react";
 import { NavLink } from "./NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "./NotificationBell";
@@ -116,6 +116,15 @@ export function PermanentSidebar() {
         >
           <Users className="h-5 w-5" />
           {!collapsed && <span>Community</span>}
+        </NavLink>
+
+        <NavLink
+          to="/chat"
+          className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-smooth ${collapsed ? 'justify-center' : ''}`}
+          activeClassName="bg-sidebar-accent font-medium"
+        >
+          <MessageSquare className="h-5 w-5" />
+          {!collapsed && <span>Chat</span>}
         </NavLink>
 
         <NavLink
