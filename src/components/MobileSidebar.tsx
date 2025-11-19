@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, LogOut, Home, Plus, Users, Settings } from "lucide-react";
+import { Menu, LogOut, Home, Plus, Users, Settings, UserCog } from "lucide-react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -128,7 +128,7 @@ export function MobileSidebar() {
                 className="justify-start text-base" 
                 onClick={() => handleNavigate('/admin/users')}
               >
-                <Users className="mr-2 h-5 w-5" />
+                <UserCog className="mr-2 h-5 w-5" />
                 User Directory
               </Button>
             </>
