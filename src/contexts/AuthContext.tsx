@@ -21,27 +21,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let isInitialLoad = true;
-
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Only navigate to dashboard on actual sign-in, not on session restoration
-        if (event === 'SIGNED_IN' && !isInitialLoad) {
+        // Only navigate on explicit sign-in from auth page
+        if (event === 'SIGNED_IN' && window.location.pathname === '/auth') {
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate('/dashboard', { replace: true });
+          }, 0);
+        }
+        
+        // Navigate to auth on sign-out
+        if (event === 'SIGNED_OUT') {
+          setTimeout(() => {
+            navigate('/auth', { replace: true });
           }, 0);
         }
       }
     );
 
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      isInitialLoad = false;
     });
 
     return () => subscription.unsubscribe();
@@ -77,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate('/auth');
+    // Navigation is handled by onAuthStateChange
   };
 
   return (
