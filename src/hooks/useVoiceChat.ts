@@ -359,12 +359,20 @@ export function useVoiceChat(channelId: string | null) {
       .on('presence', { event: 'sync' }, () => {
         const state = presenceChannel.presenceState();
         const users = Object.values(state).flat() as any[];
-        const userList = users.map((u: any) => ({
-          userId: u.userId,
-          userName: u.userName,
-          isMuted: u.isMuted,
-          isSpeaking: false
-        }));
+        
+        // Deduplicate users by userId (keep the latest entry)
+        const uniqueUsersMap = new Map<string, VoiceParticipant>();
+        users.forEach((u: any) => {
+          uniqueUsersMap.set(u.userId, {
+            userId: u.userId,
+            userName: u.userName,
+            isMuted: u.isMuted,
+            isSpeaking: false
+          });
+        });
+        
+        const userList = Array.from(uniqueUsersMap.values());
+        console.log('[Voice] Presence sync - total users:', users.length, 'unique:', userList.length);
         setParticipants(userList);
         
         users.forEach((u: any) => {
