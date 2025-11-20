@@ -267,18 +267,39 @@ const Landing = () => {
       </section>
 
       {/* Section 3: Horizontal Feature Tour */}
-      <section ref={horizontalRef} className="relative" style={{ height: "400vh" }}>
+      <section ref={horizontalRef} className="relative" style={{ height: "500vh" }}>
         <div className="sticky top-0 h-screen flex items-center overflow-hidden">
+          {/* Scroll Progress Indicators */}
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-3 z-10">
+            {[0, 1, 2, 3].map((index) => (
+              <motion.div
+                key={index}
+                className="w-2 h-2 rounded-full bg-white/30"
+                style={{
+                  backgroundColor: useTransform(
+                    scrollYProgress,
+                    [index * 0.25, (index + 1) * 0.25],
+                    ["rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 1)"]
+                  ),
+                  scale: useTransform(
+                    scrollYProgress,
+                    [index * 0.25, (index + 0.5) * 0.25, (index + 1) * 0.25],
+                    [1, 1.5, 1]
+                  ),
+                }}
+              />
+            ))}
+          </div>
           <motion.div 
-            className="flex gap-12 px-12"
+            className="flex gap-32 px-16"
             style={{ x: horizontalX }}
           >
             {/* Slide 1: Submit */}
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
                 viewport={{ once: false, amount: 0.2 }}
               >
@@ -316,8 +337,8 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
                 viewport={{ once: false, amount: 0.2 }}
               >
@@ -371,8 +392,8 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
                 viewport={{ once: false, amount: 0.2 }}
               >
@@ -410,8 +431,8 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
                 viewport={{ once: false, amount: 0.2 }}
               >
