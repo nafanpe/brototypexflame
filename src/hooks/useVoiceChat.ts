@@ -391,38 +391,51 @@ export function useVoiceChat(channelId: string | null) {
         console.log('[Voice] Presence sync - total users:', users.length, 'unique:', userList.length);
         setParticipants(userList);
         
-        // CRITICAL: Only create NEW peer connections, don't touch existing ones
+        // CRITICAL: Only create peer connections for truly new users
+        // Don't recreate for presence updates (like mute changes)
         users.forEach((u: any) => {
           if (u.userId !== user.id) {
             const existingPc = peerConnectionsRef.current.get(u.userId);
-            if (!existingPc || existingPc.connectionState === 'closed' || existingPc.connectionState === 'failed') {
-              console.log('[Voice] Creating peer connection for new/failed user:', u.userId);
+            
+            // Only create if no connection exists, or if it's definitely broken
+            if (!existingPc) {
+              console.log('[Voice] No connection exists for:', u.userId, '- creating');
+              handleNewPeer(u.userId);
+            } else if (existingPc.connectionState === 'closed') {
+              console.log('[Voice] Connection closed for:', u.userId, '- recreating');
+              peerConnectionsRef.current.delete(u.userId);
+              handleNewPeer(u.userId);
+            } else if (existingPc.connectionState === 'failed') {
+              console.log('[Voice] Connection failed for:', u.userId, '- recreating');
+              peerConnectionsRef.current.delete(u.userId);
               handleNewPeer(u.userId);
             } else {
-              console.log('[Voice] Keeping existing connection for:', u.userId, 'state:', existingPc.connectionState);
+              // Connection exists and is not failed/closed - keep it
+              console.log('[Voice] Keeping existing connection for:', u.userId, 
+                'state:', existingPc.connectionState, 
+                'iceState:', existingPc.iceConnectionState);
             }
           }
         });
       })
       .on('presence', { event: 'join' }, ({ newPresences }) => {
-        console.log('User joined voice:', newPresences);
-        newPresences.forEach((presence: any) => {
-          if (presence.userId !== user.id) {
-            handleNewPeer(presence.userId);
-          }
-        });
+        console.log('[Voice] User joined voice:', newPresences);
+        // Don't auto-create connections on join - let sync handle it
+        // This prevents duplicate connection attempts
       })
       .on('presence', { event: 'leave' }, ({ leftPresences }) => {
-        console.log('User left voice:', leftPresences);
+        console.log('[Voice] User left voice:', leftPresences);
         leftPresences.forEach((presence: any) => {
           const pc = peerConnectionsRef.current.get(presence.userId);
           if (pc) {
+            console.log('[Voice] Closing connection for leaving user:', presence.userId);
             pc.close();
             peerConnectionsRef.current.delete(presence.userId);
           }
           setRemoteStreams(prev => {
             const newMap = new Map(prev);
             newMap.delete(presence.userId);
+            console.log('[Voice] Removed stream for leaving user, remaining:', newMap.size);
             return newMap;
           });
         });
