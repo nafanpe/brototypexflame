@@ -35,21 +35,43 @@ export function useVoiceChat(channelId: string | null) {
     const pc = new RTCPeerConnection(ICE_SERVERS);
     
     if (localStreamRef.current) {
+      console.log('[Voice] Adding local tracks to peer connection:', peerId);
       localStreamRef.current.getTracks().forEach(track => {
-        pc.addTrack(track, localStreamRef.current!);
+        const sender = pc.addTrack(track, localStreamRef.current!);
+        console.log('[Voice] Added track:', {
+          trackId: track.id,
+          kind: track.kind,
+          enabled: track.enabled,
+          senderId: sender.track?.id
+        });
       });
+    } else {
+      console.warn('[Voice] No local stream available when creating peer connection');
     }
 
     pc.ontrack = (event) => {
-      console.log('Received remote track from:', peerId);
+      console.log('[Voice] ✓ Received remote track from:', peerId);
+      console.log('[Voice] Track details:', {
+        kind: event.track.kind,
+        enabled: event.track.enabled,
+        readyState: event.track.readyState,
+        muted: event.track.muted
+      });
+      
       const stream = event.streams[0];
       
       // Ensure audio tracks are enabled
       stream.getAudioTracks().forEach(track => {
         track.enabled = true;
+        console.log('[Voice] Remote track enabled:', track.id);
       });
       
-      setRemoteStreams(prev => new Map(prev).set(peerId, stream));
+      setRemoteStreams(prev => {
+        const newMap = new Map(prev);
+        newMap.set(peerId, stream);
+        console.log('[Voice] Remote streams updated, total:', newMap.size);
+        return newMap;
+      });
     };
 
     pc.onicecandidate = (event) => {
@@ -98,12 +120,24 @@ export function useVoiceChat(channelId: string | null) {
   const handleNewPeer = async (peerId: string) => {
     if (peerId === user?.id) return;
     
-    console.log('Creating offer for peer:', peerId);
+    console.log('[Voice] Creating offer for peer:', peerId);
+    console.log('[Voice] Local stream exists:', !!localStreamRef.current);
+    console.log('[Voice] Local tracks:', localStreamRef.current?.getTracks().map(t => ({
+      kind: t.kind,
+      enabled: t.enabled,
+      readyState: t.readyState
+    })));
+    
     const pc = await createPeerConnection(peerId);
     
     try {
-      const offer = await pc.createOffer();
+      const offer = await pc.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: false
+      });
       await pc.setLocalDescription(offer);
+      
+      console.log('[Voice] Sending offer to:', peerId);
       
       signalingChannelRef.current?.send({
         type: 'broadcast',
@@ -115,20 +149,24 @@ export function useVoiceChat(channelId: string | null) {
         }
       });
     } catch (error) {
-      console.error('Error creating offer:', error);
+      console.error('[Voice] Error creating offer:', error);
     }
   };
 
   const handleOffer = async (from: string, offer: RTCSessionDescriptionInit) => {
     if (from === user?.id) return;
     
-    console.log('Received offer from:', from);
+    console.log('[Voice] Received offer from:', from);
+    console.log('[Voice] Local stream for answer exists:', !!localStreamRef.current);
+    
     const pc = await createPeerConnection(from);
     
     try {
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
+      
+      console.log('[Voice] Sending answer to:', from);
       
       signalingChannelRef.current?.send({
         type: 'broadcast',
@@ -140,7 +178,7 @@ export function useVoiceChat(channelId: string | null) {
         }
       });
     } catch (error) {
-      console.error('Error handling offer:', error);
+      console.error('[Voice] Error handling offer:', error);
     }
   };
 
@@ -186,16 +224,19 @@ export function useVoiceChat(channelId: string | null) {
 
     signalingChannel
       .on('broadcast', { event: 'webrtc-offer' }, ({ payload }) => {
+        console.log('[Voice] Received offer broadcast:', payload);
         if (payload.to === user.id) {
           handleOffer(payload.from, payload.offer);
         }
       })
       .on('broadcast', { event: 'webrtc-answer' }, ({ payload }) => {
+        console.log('[Voice] Received answer broadcast:', payload);
         if (payload.to === user.id) {
           handleAnswer(payload.from, payload.answer);
         }
       })
       .on('broadcast', { event: 'ice-candidate' }, ({ payload }) => {
+        console.log('[Voice] Received ICE candidate broadcast:', payload);
         if (payload.to === user.id) {
           handleIceCandidate(payload.from, payload.candidate);
         }
@@ -264,6 +305,8 @@ export function useVoiceChat(channelId: string | null) {
 
   const connect = async () => {
     try {
+      console.log('[Voice] Requesting microphone access...');
+      
       // Enhanced audio constraints for mobile compatibility
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
@@ -276,16 +319,25 @@ export function useVoiceChat(channelId: string | null) {
         video: false
       });
       
+      console.log('[Voice] ✓ Got media stream');
+      
       // Ensure tracks are enabled
       stream.getAudioTracks().forEach(track => {
         track.enabled = true;
-        console.log('Local audio track settings:', track.getSettings());
+        console.log('[Voice] Local audio track:', {
+          id: track.id,
+          enabled: track.enabled,
+          readyState: track.readyState,
+          settings: track.getSettings()
+        });
       });
       
       localStreamRef.current = stream;
       setIsConnected(true);
+      
+      console.log('[Voice] ✓ Connection established');
     } catch (error) {
-      console.error('Failed to get audio stream:', error);
+      console.error('[Voice] Failed to get audio stream:', error);
       throw error;
     }
   };
