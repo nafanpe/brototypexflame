@@ -15,10 +15,21 @@ export function VoiceChannel({ channelId, channelName }: VoiceChannelProps) {
   const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
 
   useEffect(() => {
+    console.log('[VoiceChannel] Remote streams updated, count:', remoteStreams.size);
+    
     remoteStreams.forEach((stream, peerId) => {
+      console.log('[VoiceChannel] Processing stream for peer:', peerId);
+      console.log('[VoiceChannel] Stream tracks:', stream.getTracks().map(t => ({
+        kind: t.kind,
+        enabled: t.enabled,
+        readyState: t.readyState,
+        muted: t.muted
+      })));
+      
       let audioEl = audioElementsRef.current.get(peerId);
       
       if (!audioEl) {
+        console.log('[VoiceChannel] Creating new audio element for:', peerId);
         audioEl = document.createElement('audio');
         audioEl.autoplay = true;
         audioEl.volume = 1.0;
@@ -35,18 +46,25 @@ export function VoiceChannel({ channelId, channelName }: VoiceChannelProps) {
       }
       
       // Set stream and play
-      audioEl.srcObject = stream;
-      audioEl.play().catch(error => {
-        console.error('Error playing audio:', error);
-        // Retry play on user interaction
-        const playAudio = () => {
-          audioEl.play();
-          document.removeEventListener('click', playAudio);
-          document.removeEventListener('touchstart', playAudio);
-        };
-        document.addEventListener('click', playAudio);
-        document.addEventListener('touchstart', playAudio);
-      });
+      if (audioEl.srcObject !== stream) {
+        console.log('[VoiceChannel] Setting srcObject for:', peerId);
+        audioEl.srcObject = stream;
+        
+        audioEl.play()
+          .then(() => console.log('[VoiceChannel] ✓ Audio playing for:', peerId))
+          .catch(error => {
+            console.error('[VoiceChannel] Error playing audio for', peerId, ':', error);
+            // Retry play on user interaction
+            const playAudio = () => {
+              console.log('[VoiceChannel] Retrying play after user interaction');
+              audioEl.play().then(() => console.log('[VoiceChannel] ✓ Retry successful'));
+              document.removeEventListener('click', playAudio);
+              document.removeEventListener('touchstart', playAudio);
+            };
+            document.addEventListener('click', playAudio);
+            document.addEventListener('touchstart', playAudio);
+          });
+      }
     });
 
     // Cleanup removed peers
