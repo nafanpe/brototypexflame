@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Phone, PhoneOff, Mic, MicOff, Volume2 } from 'lucide-react';
 import { useVoiceChat } from '@/hooks/useVoiceChat';
 import { toast } from 'sonner';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useEffect, useRef } from 'react';
 
 interface VoiceChannelProps {
@@ -15,182 +15,88 @@ export function VoiceChannel({ channelId, channelName }: VoiceChannelProps) {
   const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
 
   useEffect(() => {
-    console.log('[VoiceChannel] Remote streams updated, count:', remoteStreams.size);
-    
     remoteStreams.forEach((stream, peerId) => {
-      console.log('[VoiceChannel] Processing stream for peer:', peerId);
-      console.log('[VoiceChannel] Stream tracks:', stream.getTracks().map(t => ({
-        kind: t.kind,
-        enabled: t.enabled,
-        readyState: t.readyState,
-        muted: t.muted
-      })));
-      
       let audioEl = audioElementsRef.current.get(peerId);
-      
       if (!audioEl) {
-        console.log('[VoiceChannel] Creating new audio element for:', peerId);
         audioEl = document.createElement('audio');
         audioEl.autoplay = true;
         audioEl.volume = 1.0;
-        audioEl.muted = false;
-        
-        // Mobile-specific attributes
-        audioEl.setAttribute('playsinline', '');
-        audioEl.setAttribute('webkit-playsinline', '');
-        
-        // Append to DOM (required for some mobile browsers)
         document.body.appendChild(audioEl);
-        
         audioElementsRef.current.set(peerId, audioEl);
       }
-      
-      // Set stream and play
       if (audioEl.srcObject !== stream) {
-        console.log('[VoiceChannel] Setting srcObject for:', peerId);
         audioEl.srcObject = stream;
-        
-        audioEl.play()
-          .then(() => console.log('[VoiceChannel] ✓ Audio playing for:', peerId))
-          .catch(error => {
-            console.error('[VoiceChannel] Error playing audio for', peerId, ':', error);
-            // Retry play on user interaction
-            const playAudio = () => {
-              console.log('[VoiceChannel] Retrying play after user interaction');
-              audioEl.play().then(() => console.log('[VoiceChannel] ✓ Retry successful'));
-              document.removeEventListener('click', playAudio);
-              document.removeEventListener('touchstart', playAudio);
-            };
-            document.addEventListener('click', playAudio);
-            document.addEventListener('touchstart', playAudio);
-          });
+        audioEl.play().catch(() => {});
       }
     });
 
-    // Cleanup removed peers
     audioElementsRef.current.forEach((audioEl, peerId) => {
       if (!remoteStreams.has(peerId)) {
         audioEl.pause();
         audioEl.srcObject = null;
-        if (audioEl.parentNode) {
-          audioEl.parentNode.removeChild(audioEl);
-        }
+        audioEl.parentNode?.removeChild(audioEl);
         audioElementsRef.current.delete(peerId);
       }
     });
     
-    // Cleanup on unmount
     return () => {
       audioElementsRef.current.forEach((audioEl) => {
         audioEl.pause();
         audioEl.srcObject = null;
-        if (audioEl.parentNode) {
-          audioEl.parentNode.removeChild(audioEl);
-        }
+        audioEl.parentNode?.removeChild(audioEl);
       });
       audioElementsRef.current.clear();
     };
   }, [remoteStreams]);
 
-  const handleConnect = async () => {
-    try {
-      await connect();
-      toast.success(`Connected to ${channelName}`);
-    } catch (error) {
-      toast.error('Failed to connect. Please allow microphone access.');
-    }
-  };
-
-  const handleDisconnect = () => {
-    disconnect();
-    toast.success('Disconnected from voice channel');
-  };
-
   return (
     <div className="flex flex-col h-full bg-[#0a0f1a]">
-      {/* Header */}
-      <div className="h-12 border-b border-border px-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Volume2 className="w-5 h-5 text-muted-foreground" />
-          <h2 className="font-semibold text-foreground">{channelName}</h2>
+      <div className="p-4 border-b border-border/50">
+        <div className="flex items-center gap-2 text-foreground">
+          <Phone className="w-5 h-5" />
+          <h2 className="font-semibold">{channelName}</h2>
         </div>
       </div>
 
-      {/* Voice Controls */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-8 p-8">
-        {!isConnected ? (
-          <div className="text-center space-y-4">
-            <div className="w-24 h-24 rounded-full bg-accent/20 flex items-center justify-center mx-auto">
-              <Volume2 className="w-12 h-12 text-muted-foreground" />
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Voice Channel</h3>
-              <p className="text-muted-foreground">Click to join and start speaking</p>
-            </div>
-            <Button
-              onClick={handleConnect}
-              size="lg"
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <Phone className="w-5 h-5 mr-2" />
-              Join Voice
-            </Button>
-          </div>
-        ) : (
-          <div className="w-full max-w-2xl space-y-8">
-            {/* Participants */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase px-2">
-                In Voice — {participants.length}
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {participants.map((participant) => (
-                  <div
-                    key={participant.userId}
-                    className="flex flex-col items-center gap-2 p-4 rounded-lg bg-accent/20 border border-border"
-                  >
-                    <div className="relative">
-                      <Avatar className="w-16 h-16">
-                        <AvatarFallback className="bg-primary text-primary-foreground">
-                          {participant.userName.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      {participant.isMuted && (
-                        <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-destructive flex items-center justify-center">
-                          <MicOff className="w-3 h-3 text-white" />
-                        </div>
-                      )}
-                    </div>
-                    <span className="text-sm font-medium text-center truncate w-full">
-                      {participant.userName}
-                    </span>
-                  </div>
-                ))}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="grid grid-cols-2 gap-3 md:block md:space-y-3">
+          {participants.map(participant => (
+            <div key={participant.userId} className="flex flex-col md:flex-row items-center gap-2 md:gap-3 p-3 bg-[#1a1f2e] rounded-lg">
+              <Avatar className="w-12 h-12">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {participant.userName.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0 text-center md:text-left">
+                <div className="text-sm md:text-base font-medium text-foreground truncate">
+                  {participant.userName}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {participant.isSpeaking && <Volume2 className="w-3 h-3 md:w-4 md:h-4 text-green-500 animate-pulse" />}
+                {participant.isMuted && <MicOff className="w-3 h-3 md:w-4 md:h-4 text-muted-foreground" />}
               </div>
             </div>
+          ))}
+        </div>
+      </div>
 
-            {/* Controls */}
-            <div className="flex justify-center gap-4">
-              <Button
-                onClick={toggleMute}
-                size="lg"
-                variant={isMuted ? 'destructive' : 'secondary'}
-                className="rounded-full w-14 h-14"
-              >
-                {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
-              </Button>
-              <Button
-                onClick={handleDisconnect}
-                size="lg"
-                variant="destructive"
-                className="rounded-full w-14 h-14"
-              >
-                <PhoneOff className="w-6 h-6" />
-              </Button>
-            </div>
-            <p className="text-center text-sm text-muted-foreground">
-              {isMuted ? 'You are muted' : 'You are unmuted'}
-            </p>
+      <div className="p-4 border-t border-border/50">
+        {!isConnected ? (
+          <Button onClick={() => connect().then(() => toast.success(`Connected to ${channelName}`)).catch(() => toast.error('Failed to connect'))} className="w-full">
+            <Phone className="w-4 h-4 mr-2" />
+            Join Voice Channel
+          </Button>
+        ) : (
+          <div className="flex gap-2">
+            <Button onClick={toggleMute} variant={isMuted ? "destructive" : "secondary"} className="flex-1">
+              {isMuted ? <MicOff className="w-4 h-4 mr-2" /> : <Mic className="w-4 h-4 mr-2" />}
+              {isMuted ? 'Unmute' : 'Mute'}
+            </Button>
+            <Button onClick={() => { disconnect(); toast.success('Disconnected'); }} variant="destructive" className="flex-1">
+              <PhoneOff className="w-4 h-4 mr-2" />
+              Disconnect
+            </Button>
           </div>
         )}
       </div>
