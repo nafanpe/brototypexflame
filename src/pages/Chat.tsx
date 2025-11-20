@@ -84,31 +84,40 @@ export default function Chat() {
 
   return (
     <div className="dark h-screen w-full flex overflow-hidden bg-[#0a0f1a] text-white">
-      {/* Pane 1: Server Rail */}
-      <ServerRail
-        selectedServer={selectedServer}
-        onSelectServer={handleSelectServer}
-        onDMMode={handleDMMode}
-        isDMMode={isDMMode}
-      />
+      {/* Desktop: Pane 1 - Server Rail (hidden on mobile) */}
+      <div className="hidden md:block">
+        <ServerRail
+          selectedServer={selectedServer}
+          onSelectServer={handleSelectServer}
+          onDMMode={handleDMMode}
+          isDMMode={isDMMode}
+        />
+      </div>
 
-      {/* Pane 2: Sidebar */}
-      <ChatSidebar
-        selectedServer={selectedServer}
-        selectedChannel={selectedChannel}
-        selectedDM={selectedDM}
-        isDMMode={isDMMode}
-        onSelectChannel={handleSelectChannel}
-        onSelectDM={handleSelectDM}
-        onServerUpdated={handleServerUpdated}
-      />
+      {/* Desktop: Pane 2 - Sidebar (hidden on mobile) */}
+      <div className="hidden md:block">
+        <ChatSidebar
+          selectedServer={selectedServer}
+          selectedChannel={selectedChannel}
+          selectedDM={selectedDM}
+          isDMMode={isDMMode}
+          onSelectChannel={handleSelectChannel}
+          onSelectDM={handleSelectDM}
+          onServerUpdated={handleServerUpdated}
+        />
+      </div>
 
-      {/* Pane 3: Chat Area */}
+      {/* Pane 3: Chat Area (full width on mobile) */}
       <ChatArea
         selectedServer={selectedServer}
         selectedChannel={selectedChannel}
         selectedDM={selectedDM}
         isDMMode={isDMMode}
+        onSelectServer={handleSelectServer}
+        onSelectChannel={handleSelectChannel}
+        onSelectDM={handleSelectDM}
+        onDMMode={handleDMMode}
+        onServerUpdated={handleServerUpdated}
       />
     </div>
   );

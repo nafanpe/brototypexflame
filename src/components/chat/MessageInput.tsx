@@ -83,7 +83,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
   };
 
   return (
-    <div className="p-4 border-t border-border/50">
+    <div className="p-4 border-t border-border/50 bg-[#0a0f1a]">
       {imagePreview && (
         <div className="mb-2 relative inline-block">
           <img src={imagePreview} alt="Preview" className="rounded-lg max-h-32" />
