@@ -893,7 +893,6 @@ export default function AdminPanel() {
                     <TableHead>Contact</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Joined</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -916,17 +915,6 @@ export default function AdminPanel() {
                       </TableCell>
                       <TableCell>
                         {new Date(userRow.created_at).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteUser(userRow.id, userRow.full_name)}
-                          disabled={userRow.id === user?.id}
-                          className="hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
