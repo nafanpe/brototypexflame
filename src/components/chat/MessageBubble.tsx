@@ -41,7 +41,7 @@ export function MessageBubble({ message, isOwn }: MessageBubbleProps) {
         </div>
 
         <div
-          className={`rounded-lg px-4 py-2 ${
+          className={`rounded-lg px-4 py-2 text-sm md:text-base ${
             isOwn
               ? 'bg-primary text-primary-foreground'
               : 'bg-secondary text-secondary-foreground'

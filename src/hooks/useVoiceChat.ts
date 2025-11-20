@@ -149,11 +149,19 @@ export function useVoiceChat(channelId: string | null) {
       console.log(`[Voice] ICE connection state for ${peerId}:`, pc.iceConnectionState);
       
       if (pc.iceConnectionState === 'failed') {
-        console.log(`[Voice] ⚠️ ICE connection failed for ${peerId}`);
-        // Don't try to restart here - let presence sync handle recreation
+        console.error(`[Voice] ⚠️ ICE connection FAILED for ${peerId}`);
+        console.log(`[Voice] Attempting to restart ICE for ${peerId}`);
+        // Attempt ICE restart
+        pc.restartIce();
       } else if (pc.iceConnectionState === 'disconnected') {
-        console.log(`[Voice] ⚠️ ICE connection disconnected for ${peerId}`);
-        // Don't try to restart here - let presence sync handle recreation
+        console.log(`[Voice] ⚠️ ICE connection DISCONNECTED for ${peerId} - waiting for auto-recovery`);
+        // Give ICE 5 seconds to reconnect naturally before forcing restart
+        setTimeout(() => {
+          if (pc.iceConnectionState === 'disconnected') {
+            console.log(`[Voice] Still disconnected after 5s, attempting restart for ${peerId}`);
+            pc.restartIce();
+          }
+        }, 5000);
       } else if (pc.iceConnectionState === 'connected') {
         console.log(`[Voice] ✓✓ ICE connection established for ${peerId}`);
       } else if (pc.iceConnectionState === 'completed') {

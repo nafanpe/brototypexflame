@@ -2,17 +2,26 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Hash, User } from 'lucide-react';
+import { Hash, User, Menu } from 'lucide-react';
 import { ChatServer, ChatChannel, DMConversation } from '@/pages/Chat';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { VoiceChannel } from './VoiceChannel';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Button } from '@/components/ui/button';
+import { ServerRail } from './ServerRail';
+import { ChatSidebar } from './ChatSidebar';
 
 interface ChatAreaProps {
   selectedServer: ChatServer | null;
   selectedChannel: ChatChannel | null;
   selectedDM: DMConversation | null;
   isDMMode: boolean;
+  onSelectServer?: (server: ChatServer) => void;
+  onSelectChannel?: (channel: ChatChannel) => void;
+  onSelectDM?: (dm: DMConversation) => void;
+  onDMMode?: () => void;
+  onServerUpdated?: (server: ChatServer | null) => void;
 }
 
 interface Message {
@@ -28,11 +37,22 @@ interface Message {
   };
 }
 
-export function ChatArea({ selectedServer, selectedChannel, selectedDM, isDMMode }: ChatAreaProps) {
+export function ChatArea({ 
+  selectedServer, 
+  selectedChannel, 
+  selectedDM, 
+  isDMMode,
+  onSelectServer,
+  onSelectChannel,
+  onSelectDM,
+  onDMMode,
+  onServerUpdated
+}: ChatAreaProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (selectedChannel) {
@@ -201,12 +221,68 @@ export function ChatArea({ selectedServer, selectedChannel, selectedDM, isDMMode
     }
   };
 
+  const handleMobileChannelSelect = (channel: ChatChannel) => {
+    if (onSelectChannel) {
+      onSelectChannel(channel);
+    }
+    setMobileMenuOpen(false);
+  };
+
+  const handleMobileDMSelect = (dm: DMConversation) => {
+    if (onSelectDM) {
+      onSelectDM(dm);
+    }
+    setMobileMenuOpen(false);
+  };
+
+  const handleMobileServerSelect = (server: ChatServer) => {
+    if (onSelectServer) {
+      onSelectServer(server);
+    }
+  };
+
   if (!selectedChannel && !selectedDM) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">
-          {isDMMode ? 'Select a conversation or start a new DM' : 'Select a channel to start chatting'}
-        </p>
+      <div className="flex-1 flex flex-col bg-background">
+        {/* Mobile Header with Menu */}
+        <div className="h-12 px-4 flex items-center border-b border-border/50 md:hidden">
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="mr-2">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[312px] p-0 bg-[#0a0f1a] border-r border-border/50">
+              <div className="flex h-full">
+                <ServerRail
+                  selectedServer={selectedServer}
+                  onSelectServer={handleMobileServerSelect}
+                  onDMMode={() => {
+                    if (onDMMode) onDMMode();
+                    setMobileMenuOpen(false);
+                  }}
+                  isDMMode={isDMMode}
+                />
+                <ChatSidebar
+                  selectedServer={selectedServer}
+                  selectedChannel={selectedChannel}
+                  selectedDM={selectedDM}
+                  isDMMode={isDMMode}
+                  onSelectChannel={handleMobileChannelSelect}
+                  onSelectDM={handleMobileDMSelect}
+                  onServerUpdated={onServerUpdated}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+          <h2 className="font-semibold text-foreground">Brototype Chat</h2>
+        </div>
+        
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-muted-foreground">
+            {isDMMode ? 'Select a conversation or start a new DM' : 'Select a channel to start chatting'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -214,7 +290,42 @@ export function ChatArea({ selectedServer, selectedChannel, selectedDM, isDMMode
   // Show voice channel interface for voice channels
   if (selectedChannel?.type === 'voice') {
     return (
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col">
+        {/* Mobile Header with Menu */}
+        <div className="h-12 px-4 flex items-center border-b border-border/50 md:hidden">
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="mr-2">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[312px] p-0 bg-[#0a0f1a] border-r border-border/50">
+              <div className="flex h-full">
+                <ServerRail
+                  selectedServer={selectedServer}
+                  onSelectServer={handleMobileServerSelect}
+                  onDMMode={() => {
+                    if (onDMMode) onDMMode();
+                    setMobileMenuOpen(false);
+                  }}
+                  isDMMode={isDMMode}
+                />
+                <ChatSidebar
+                  selectedServer={selectedServer}
+                  selectedChannel={selectedChannel}
+                  selectedDM={selectedDM}
+                  isDMMode={isDMMode}
+                  onSelectChannel={handleMobileChannelSelect}
+                  onSelectDM={handleMobileDMSelect}
+                  onServerUpdated={onServerUpdated}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+          <Hash className="h-5 w-5 mr-2 text-muted-foreground" />
+          <h2 className="font-semibold text-foreground">{selectedChannel.name}</h2>
+        </div>
+        
         <VoiceChannel channelId={selectedChannel.id} channelName={selectedChannel.name} />
       </div>
     );
@@ -224,6 +335,37 @@ export function ChatArea({ selectedServer, selectedChannel, selectedDM, isDMMode
     <div className="flex-1 flex flex-col bg-background">
       {/* Header */}
       <div className="h-12 px-4 flex items-center border-b border-border/50">
+        {/* Mobile Menu Button - only visible on mobile */}
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="mr-2 md:hidden">
+              <Menu className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[312px] p-0 bg-[#0a0f1a] border-r border-border/50">
+            <div className="flex h-full">
+              <ServerRail
+                selectedServer={selectedServer}
+                onSelectServer={handleMobileServerSelect}
+                onDMMode={() => {
+                  if (onDMMode) onDMMode();
+                  setMobileMenuOpen(false);
+                }}
+                isDMMode={isDMMode}
+              />
+              <ChatSidebar
+                selectedServer={selectedServer}
+                selectedChannel={selectedChannel}
+                selectedDM={selectedDM}
+                isDMMode={isDMMode}
+                onSelectChannel={handleMobileChannelSelect}
+                onSelectDM={handleMobileDMSelect}
+                onServerUpdated={onServerUpdated}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+
         {selectedChannel ? (
           <>
             <Hash className="h-5 w-5 mr-2 text-muted-foreground" />
@@ -256,8 +398,10 @@ export function ChatArea({ selectedServer, selectedChannel, selectedDM, isDMMode
         )}
       </ScrollArea>
 
-      {/* Input */}
-      <MessageInput onSend={handleSendMessage} />
+      {/* Input - sticks to bottom on mobile */}
+      <div className="md:relative md:bottom-0">
+        <MessageInput onSend={handleSendMessage} />
+      </div>
     </div>
   );
 }
