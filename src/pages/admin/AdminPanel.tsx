@@ -492,10 +492,16 @@ export default function AdminPanel() {
 
       if (roleError) throw roleError;
 
+      // Immediately update local state for instant UI feedback
+      const updatedUsers = users.filter(u => u.id !== userId);
+      setUsers(updatedUsers);
+      setFilteredUsers(updatedUsers.filter(u => 
+        searchQuery.trim() === '' ||
+        u.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.email?.toLowerCase().includes(searchQuery.toLowerCase())
+      ));
+
       toast.success('User deleted successfully');
-      
-      // Refresh user list
-      await fetchUsers();
     } catch (error: any) {
       console.error('Error deleting user:', error);
       toast.error('Failed to delete user: ' + error.message);
