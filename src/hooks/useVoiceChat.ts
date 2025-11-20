@@ -149,34 +149,11 @@ export function useVoiceChat(channelId: string | null) {
       console.log(`[Voice] ICE connection state for ${peerId}:`, pc.iceConnectionState);
       
       if (pc.iceConnectionState === 'failed') {
-        console.log(`[Voice] ⚠️ Connection failed for ${peerId}, attempting ICE restart...`);
-        
-        // Try ICE restart
-        setTimeout(() => {
-          if (pc.iceConnectionState === 'failed' && pc.connectionState !== 'closed') {
-            console.log(`[Voice] Restarting ICE for ${peerId}`);
-            pc.restartIce();
-          }
-        }, 1000);
-        
-        // If still failed after 5 seconds, recreate
-        setTimeout(() => {
-          if (pc.iceConnectionState === 'failed' && pc.connectionState !== 'closed') {
-            console.log(`[Voice] ICE restart failed, recreating connection for ${peerId}`);
-            peerConnectionsRef.current.delete(peerId);
-            handleNewPeer(peerId);
-          }
-        }, 5000);
+        console.log(`[Voice] ⚠️ ICE connection failed for ${peerId}`);
+        // Don't try to restart here - let presence sync handle recreation
       } else if (pc.iceConnectionState === 'disconnected') {
-        console.log(`[Voice] ⚠️ Connection disconnected for ${peerId}, waiting before retry...`);
-        
-        // Give it time to reconnect naturally first
-        setTimeout(() => {
-          if ((pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') && pc.connectionState !== 'closed') {
-            console.log(`[Voice] Still disconnected, attempting ICE restart for ${peerId}`);
-            pc.restartIce();
-          }
-        }, 3000);
+        console.log(`[Voice] ⚠️ ICE connection disconnected for ${peerId}`);
+        // Don't try to restart here - let presence sync handle recreation
       } else if (pc.iceConnectionState === 'connected') {
         console.log(`[Voice] ✓✓ ICE connection established for ${peerId}`);
       } else if (pc.iceConnectionState === 'completed') {
@@ -189,18 +166,13 @@ export function useVoiceChat(channelId: string | null) {
       console.log(`[Voice] Connection state for ${peerId}:`, pc.connectionState);
       
       if (pc.connectionState === 'failed') {
-        console.log(`[Voice] ⚠️⚠️ Peer connection FAILED for ${peerId}, recreating...`);
-        peerConnectionsRef.current.delete(peerId);
-        setTimeout(() => {
-          if (!peerConnectionsRef.current.has(peerId)) {
-            handleNewPeer(peerId);
-          }
-        }, 1000);
+        console.log(`[Voice] ⚠️⚠️ Peer connection FAILED for ${peerId}`);
+        // Let presence sync handle recreation
       } else if (pc.connectionState === 'connected') {
         console.log(`[Voice] ✓✓✓ Peer connection fully CONNECTED for ${peerId}`);
       } else if (pc.connectionState === 'disconnected') {
-        console.log(`[Voice] ⚠️ Peer connection DISCONNECTED for ${peerId}, monitoring...`);
-        // Don't immediately recreate on disconnect, give it time to recover
+        console.log(`[Voice] ⚠️ Peer connection DISCONNECTED for ${peerId}`);
+        // Let presence sync handle recreation
       }
     };
 
@@ -270,11 +242,16 @@ export function useVoiceChat(channelId: string | null) {
         return;
       }
       
-      // If connection is broken, close it first
-      if (connState === 'failed' || connState === 'closed') {
-        console.log('[Voice] Closing failed/closed connection before processing offer:', from);
+      // If connection is broken or disconnected, close it and recreate
+      // This prevents ufrag mismatches from reusing stale connections
+      if (connState === 'failed' || connState === 'closed' || connState === 'disconnected' || 
+          iceState === 'failed' || iceState === 'disconnected') {
+        console.log('[Voice] Closing stale connection before processing offer:', from, 
+          'connState:', connState, 'iceState:', iceState);
         existingPc.close();
         peerConnectionsRef.current.delete(from);
+        // Clear any pending candidates for this peer
+        pendingCandidatesRef.current.delete(from);
       }
     }
     
@@ -432,8 +409,13 @@ export function useVoiceChat(channelId: string | null) {
               console.log('[Voice] Connection failed for:', u.userId, '- recreating');
               peerConnectionsRef.current.delete(u.userId);
               handleNewPeer(u.userId);
+            } else if (existingPc.connectionState === 'disconnected' || existingPc.iceConnectionState === 'disconnected') {
+              console.log('[Voice] Connection disconnected for:', u.userId, '- recreating');
+              existingPc.close();
+              peerConnectionsRef.current.delete(u.userId);
+              handleNewPeer(u.userId);
             } else {
-              // Connection exists and is not failed/closed - keep it
+              // Connection exists and is not failed/closed/disconnected - keep it
               console.log('[Voice] Keeping existing connection for:', u.userId, 
                 'state:', existingPc.connectionState, 
                 'iceState:', existingPc.iceConnectionState);
