@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, TrendingUp, MessageSquare, Clock, BarChart3, PieChart, LineChart, RefreshCw, Download, Pencil, MessageCircle } from 'lucide-react';
+import { Users, TrendingUp, MessageSquare, Clock, BarChart3, PieChart, LineChart, RefreshCw, Download, Pencil, MessageCircle, Trash2 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart as RePieChart, Pie, Cell, LineChart as ReLineChart, Line } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -454,6 +454,54 @@ export default function AdminPanel() {
     setFilteredUsers(filtered);
   };
 
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    // Prevent self-deletion
+    if (userId === user?.id) {
+      toast.error('Cannot delete your own account');
+      return;
+    }
+
+    const confirmMessage = `Are you sure you want to permanently delete ${userName}? This will remove all their data including posts, complaints, and messages. This action cannot be undone.`;
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      // Delete from profiles (cascades to related tables)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (profileError) throw profileError;
+
+      // Delete from profiles_sensitive
+      const { error: sensitiveError } = await supabase
+        .from('profiles_sensitive')
+        .delete()
+        .eq('id', userId);
+
+      if (sensitiveError) throw sensitiveError;
+
+      // Delete from user_roles
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+
+      if (roleError) throw roleError;
+
+      toast.success('User deleted successfully');
+      
+      // Refresh user list
+      await fetchUsers();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error('Failed to delete user: ' + error.message);
+    }
+  };
+
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'admin':
@@ -842,6 +890,7 @@ export default function AdminPanel() {
                     <TableHead>Contact</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Joined</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -864,6 +913,17 @@ export default function AdminPanel() {
                       </TableCell>
                       <TableCell>
                         {new Date(user.created_at).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteUser(user.id, user.full_name)}
+                          disabled={user.id === user?.id}
+                          className="hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
