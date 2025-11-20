@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Users, Calendar, User, Edit2, Check, X, Upload } from 'lucide-react';
+import { Users, Calendar, User, Edit2, Check, X, Upload, Trash2 } from 'lucide-react';
 import { ChatServer } from '@/pages/Chat';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -24,9 +24,10 @@ interface ServerInfoDialogProps {
   onOpenChange: (open: boolean) => void;
   server: ChatServer | null;
   onServerUpdated?: (updatedServer: ChatServer) => void;
+  onServerDeleted?: () => void;
 }
 
-export function ServerInfoDialog({ open, onOpenChange, server, onServerUpdated }: ServerInfoDialogProps) {
+export function ServerInfoDialog({ open, onOpenChange, server, onServerUpdated, onServerDeleted }: ServerInfoDialogProps) {
   const { user } = useAuth();
   const [members, setMembers] = useState<ServerMember[]>([]);
   const [ownerProfile, setOwnerProfile] = useState<{ full_name: string; avatar_url?: string } | null>(null);
@@ -163,6 +164,30 @@ export function ServerInfoDialog({ open, onOpenChange, server, onServerUpdated }
       toast.error('Failed to upload icon');
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDeleteServer = async () => {
+    if (!server) return;
+
+    const confirmMessage = `Are you sure you want to delete "${server.name}"? This will permanently delete all channels and messages. This action cannot be undone.`;
+    
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('chat_servers')
+      .delete()
+      .eq('id', server.id);
+
+    if (error) {
+      console.error('Error deleting server:', error);
+      toast.error('Failed to delete server');
+    } else {
+      toast.success('Server deleted successfully');
+      onOpenChange(false);
+      onServerDeleted?.();
     }
   };
 
@@ -303,6 +328,24 @@ export function ServerInfoDialog({ open, onOpenChange, server, onServerUpdated }
               </div>
             </ScrollArea>
           </div>
+
+          {/* Delete Server Section - Only visible to owner */}
+          {isOwner && (
+            <div className="pt-4 border-t border-border/50">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteServer}
+                className="w-full"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Server
+              </Button>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                This will permanently delete the server and all its data
+              </p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
