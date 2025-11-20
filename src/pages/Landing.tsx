@@ -277,10 +277,10 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                viewport={{ once: false, amount: 0.4 }}
+                transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+                viewport={{ once: false, amount: 0.2 }}
               >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6 gradient-text-hover">Submit.</h2>
@@ -316,10 +316,10 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                viewport={{ once: false, amount: 0.4 }}
+                transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+                viewport={{ once: false, amount: 0.2 }}
               >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6 gradient-text-hover">Track.</h2>
@@ -371,10 +371,10 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                viewport={{ once: false, amount: 0.4 }}
+                transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+                viewport={{ once: false, amount: 0.2 }}
               >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6 gradient-text-hover">Resolve.</h2>
@@ -410,10 +410,10 @@ const Landing = () => {
             <div className="min-w-[100vw] h-screen flex items-center justify-center">
               <motion.div 
                 className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center px-6 md:px-8"
-                initial={{ opacity: 0, y: 50 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                viewport={{ once: false, amount: 0.4 }}
+                transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+                viewport={{ once: false, amount: 0.2 }}
               >
                 <div>
                   <h2 className="text-5xl md:text-6xl font-bold mb-6 gradient-text-hover">Connect.</h2>
