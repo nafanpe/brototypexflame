@@ -468,29 +468,26 @@ export default function AdminPanel() {
     }
 
     try {
-      // Delete from profiles (cascades to related tables)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
+      // Call edge function to delete user from auth
+      const { data: sessionData } = await supabase.auth.getSession();
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionData.session?.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId }),
+        }
+      );
 
-      if (profileError) throw profileError;
+      const result = await response.json();
 
-      // Delete from profiles_sensitive
-      const { error: sensitiveError } = await supabase
-        .from('profiles_sensitive')
-        .delete()
-        .eq('id', userId);
-
-      if (sensitiveError) throw sensitiveError;
-
-      // Delete from user_roles
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
-
-      if (roleError) throw roleError;
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete user');
+      }
 
       // Immediately update local state for instant UI feedback
       const updatedUsers = users.filter(u => u.id !== userId);
