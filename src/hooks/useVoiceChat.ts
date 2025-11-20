@@ -11,24 +11,8 @@ interface VoiceParticipant {
 
 const ICE_SERVERS = {
   iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
     { urls: 'stun:stun1.l.google.com:19302' },
-    { urls: 'stun:stun2.l.google.com:19302' },
-    {
-      urls: 'turn:openrelay.metered.ca:80',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    },
-    {
-      urls: 'turn:openrelay.metered.ca:443',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    },
-    {
-      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    }
+    { urls: 'stun:stun2.l.google.com:19302' }
   ],
   iceCandidatePoolSize: 10
 };
@@ -49,6 +33,7 @@ export function useVoiceChat(channelId: string | null) {
   const isNegotiatingRef = useRef<Map<string, boolean>>(new Map());
   const lastConnectTimeRef = useRef<number>(0);
   const previousUserListRef = useRef<string>('');
+  const disconnectTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const createPeerConnection = async (peerId: string) => {
     if (peerConnectionsRef.current.has(peerId)) {
@@ -69,6 +54,14 @@ export function useVoiceChat(channelId: string | null) {
       stream.getAudioTracks().forEach(audioTrack => {
         audioTrack.enabled = true;
       });
+      
+      event.track.onended = () => {
+        console.log('[Voice] Track ended for peer:', peerId, 'Connection state:', pc.connectionState);
+        if (pc.connectionState === 'connected') {
+          console.log('[Voice] Attempting ICE restart instead of closing connection');
+          pc.restartIce();
+        }
+      };
       
       setRemoteStreams(prev => {
         const newMap = new Map(prev);
@@ -202,6 +195,14 @@ export function useVoiceChat(channelId: string | null) {
           previousUserListRef.current = currentUserIds;
           users.forEach((u: any) => {
             if (u.userId !== user.id) {
+              // Check if there's a pending disconnect timer - cancel it if user rejoined
+              if (disconnectTimersRef.current.has(u.userId)) {
+                console.log('[Voice] User rejoined within grace period, canceling disconnect:', u.userId);
+                clearTimeout(disconnectTimersRef.current.get(u.userId)!);
+                disconnectTimersRef.current.delete(u.userId);
+                return;
+              }
+              
               const existingPc = peerConnectionsRef.current.get(u.userId);
               if (!existingPc || existingPc.connectionState === 'closed' || existingPc.connectionState === 'failed') {
                 handleNewPeer(u.userId);
@@ -223,14 +224,28 @@ export function useVoiceChat(channelId: string | null) {
       })
       .on('presence', { event: 'leave' }, ({ leftPresences }) => {
         leftPresences.forEach((presence: any) => {
-          peerConnectionsRef.current.get(presence.userId)?.close();
-          peerConnectionsRef.current.delete(presence.userId);
-          isNegotiatingRef.current.delete(presence.userId);
-          setRemoteStreams(prev => {
-            const newMap = new Map(prev);
-            newMap.delete(presence.userId);
-            return newMap;
-          });
+          const userId = presence.userId;
+          
+          // Clear any existing timer
+          if (disconnectTimersRef.current.has(userId)) {
+            clearTimeout(disconnectTimersRef.current.get(userId)!);
+          }
+          
+          // Set a 3-second grace period before closing connection
+          const timer = setTimeout(() => {
+            console.log('[Voice] Grace period expired, closing connection for:', userId);
+            peerConnectionsRef.current.get(userId)?.close();
+            peerConnectionsRef.current.delete(userId);
+            isNegotiatingRef.current.delete(userId);
+            disconnectTimersRef.current.delete(userId);
+            setRemoteStreams(prev => {
+              const newMap = new Map(prev);
+              newMap.delete(userId);
+              return newMap;
+            });
+          }, 3000);
+          
+          disconnectTimersRef.current.set(userId, timer);
         });
       })
       .subscribe(async (status) => {
@@ -270,6 +285,8 @@ export function useVoiceChat(channelId: string | null) {
     peerConnectionsRef.current.clear();
     pendingCandidatesRef.current.clear();
     isNegotiatingRef.current.clear();
+    disconnectTimersRef.current.forEach(timer => clearTimeout(timer));
+    disconnectTimersRef.current.clear();
     previousUserListRef.current = '';
     sessionIdRef.current = null;
     channelRef.current?.untrack();
