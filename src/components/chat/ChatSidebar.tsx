@@ -334,6 +334,7 @@ export function ChatSidebar({
         onOpenChange={setIsServerInfoOpen}
         server={selectedServer}
         onServerUpdated={onServerUpdated}
+        onServerDeleted={onServerUpdated ? () => onServerUpdated(null as any) : undefined}
       />
     </div>
   );

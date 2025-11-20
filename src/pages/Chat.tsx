@@ -70,7 +70,7 @@ export default function Chat() {
     setSelectedChannel(null);
   };
 
-  const handleServerUpdated = (updatedServer: ChatServer) => {
+  const handleServerUpdated = (updatedServer: ChatServer | null) => {
     setSelectedServer(updatedServer);
   };
 
