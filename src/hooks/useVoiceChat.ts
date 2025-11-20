@@ -229,29 +229,32 @@ export function useVoiceChat(channelId: string | null) {
     
     console.log('[Voice] Received offer from:', from);
     
-    // CRITICAL: Don't process offers if connection is already stable and working
+    // Check existing connection state
     const existingPc = peerConnectionsRef.current.get(from);
     if (existingPc) {
       const connState = existingPc.connectionState;
       const iceState = existingPc.iceConnectionState;
       
-      // If connection is working, ignore the new offer to prevent renegotiation
+      // If connection is working perfectly, ignore the offer
       if (connState === 'connected' && (iceState === 'connected' || iceState === 'completed')) {
-        console.log('[Voice] ⚠️ Ignoring offer - connection already stable:', from, 
-          'connState:', connState, 'iceState:', iceState);
+        console.log('[Voice] ⚠️ Ignoring offer - connection already stable:', from);
         return;
       }
       
-      // If connection is broken or disconnected, close it and recreate
-      // This prevents ufrag mismatches from reusing stale connections
-      if (connState === 'failed' || connState === 'closed' || connState === 'disconnected' || 
-          iceState === 'failed' || iceState === 'disconnected') {
-        console.log('[Voice] Closing stale connection before processing offer:', from, 
-          'connState:', connState, 'iceState:', iceState);
+      // Only close and recreate if connection is permanently broken (failed or closed)
+      // Don't close on "disconnected" - that's temporary and can recover
+      if (connState === 'failed' || connState === 'closed') {
+        console.log('[Voice] Closing permanently broken connection before processing offer:', from, 
+          'connState:', connState);
         existingPc.close();
         peerConnectionsRef.current.delete(from);
-        // Clear any pending candidates for this peer
         pendingCandidatesRef.current.delete(from);
+      } else if (connState === 'connecting' || connState === 'new') {
+        // Connection is still being established - process the offer
+        console.log('[Voice] Connection still establishing, processing offer:', from, 'connState:', connState);
+      } else {
+        // For any other state (including disconnected), log but continue processing
+        console.log('[Voice] Processing offer for connection in state:', connState, 'iceState:', iceState);
       }
     }
     
@@ -391,31 +394,27 @@ export function useVoiceChat(channelId: string | null) {
         console.log('[Voice] Presence sync - total users:', users.length, 'unique:', userList.length);
         setParticipants(userList);
         
-        // CRITICAL: Only create peer connections for truly new users
-        // Don't recreate for presence updates (like mute changes)
+        // CRITICAL: Only create peer connections for truly new users OR if definitely broken
+        // DON'T recreate on "disconnected" - that's temporary and can recover
+        // Only recreate on "failed" or "closed" which are permanent states
         users.forEach((u: any) => {
           if (u.userId !== user.id) {
             const existingPc = peerConnectionsRef.current.get(u.userId);
             
-            // Only create if no connection exists, or if it's definitely broken
             if (!existingPc) {
+              // No connection exists - create new one
               console.log('[Voice] No connection exists for:', u.userId, '- creating');
               handleNewPeer(u.userId);
-            } else if (existingPc.connectionState === 'closed') {
-              console.log('[Voice] Connection closed for:', u.userId, '- recreating');
-              peerConnectionsRef.current.delete(u.userId);
-              handleNewPeer(u.userId);
-            } else if (existingPc.connectionState === 'failed') {
-              console.log('[Voice] Connection failed for:', u.userId, '- recreating');
-              peerConnectionsRef.current.delete(u.userId);
-              handleNewPeer(u.userId);
-            } else if (existingPc.connectionState === 'disconnected' || existingPc.iceConnectionState === 'disconnected') {
-              console.log('[Voice] Connection disconnected for:', u.userId, '- recreating');
+            } else if (existingPc.connectionState === 'closed' || existingPc.connectionState === 'failed') {
+              // Connection is permanently broken - recreate
+              console.log('[Voice] Connection permanently broken for:', u.userId, 
+                'state:', existingPc.connectionState, '- recreating');
               existingPc.close();
               peerConnectionsRef.current.delete(u.userId);
               handleNewPeer(u.userId);
             } else {
-              // Connection exists and is not failed/closed/disconnected - keep it
+              // Connection exists and is not permanently broken - keep it
+              // Even if "disconnected", give ICE time to recover naturally
               console.log('[Voice] Keeping existing connection for:', u.userId, 
                 'state:', existingPc.connectionState, 
                 'iceState:', existingPc.iceConnectionState);
