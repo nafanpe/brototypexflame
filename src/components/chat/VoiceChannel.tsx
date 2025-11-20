@@ -21,19 +21,57 @@ export function VoiceChannel({ channelId, channelName }: VoiceChannelProps) {
       if (!audioEl) {
         audioEl = document.createElement('audio');
         audioEl.autoplay = true;
+        audioEl.volume = 1.0;
+        audioEl.muted = false;
+        
+        // Mobile-specific attributes
         audioEl.setAttribute('playsinline', '');
+        audioEl.setAttribute('webkit-playsinline', '');
+        
+        // Append to DOM (required for some mobile browsers)
+        document.body.appendChild(audioEl);
+        
         audioElementsRef.current.set(peerId, audioEl);
       }
       
+      // Set stream and play
       audioEl.srcObject = stream;
+      audioEl.play().catch(error => {
+        console.error('Error playing audio:', error);
+        // Retry play on user interaction
+        const playAudio = () => {
+          audioEl.play();
+          document.removeEventListener('click', playAudio);
+          document.removeEventListener('touchstart', playAudio);
+        };
+        document.addEventListener('click', playAudio);
+        document.addEventListener('touchstart', playAudio);
+      });
     });
 
+    // Cleanup removed peers
     audioElementsRef.current.forEach((audioEl, peerId) => {
       if (!remoteStreams.has(peerId)) {
+        audioEl.pause();
         audioEl.srcObject = null;
+        if (audioEl.parentNode) {
+          audioEl.parentNode.removeChild(audioEl);
+        }
         audioElementsRef.current.delete(peerId);
       }
     });
+    
+    // Cleanup on unmount
+    return () => {
+      audioElementsRef.current.forEach((audioEl) => {
+        audioEl.pause();
+        audioEl.srcObject = null;
+        if (audioEl.parentNode) {
+          audioEl.parentNode.removeChild(audioEl);
+        }
+      });
+      audioElementsRef.current.clear();
+    };
   }, [remoteStreams]);
 
   const handleConnect = async () => {
