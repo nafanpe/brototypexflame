@@ -1,10 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Calendar, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Users, Calendar, User, Edit2, Check, X, Upload } from 'lucide-react';
 import { ChatServer } from '@/pages/Chat';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface ServerMember {
   user_id: string;
@@ -22,12 +26,19 @@ interface ServerInfoDialogProps {
 }
 
 export function ServerInfoDialog({ open, onOpenChange, server }: ServerInfoDialogProps) {
+  const { user } = useAuth();
   const [members, setMembers] = useState<ServerMember[]>([]);
   const [ownerProfile, setOwnerProfile] = useState<{ full_name: string; avatar_url?: string } | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (server && open) {
       fetchServerDetails();
+      setEditedName(server.name);
+      setIsEditing(false);
     }
   }, [server, open]);
 
@@ -81,6 +92,83 @@ export function ServerInfoDialog({ open, onOpenChange, server }: ServerInfoDialo
     }
   };
 
+  const handleSaveName = async () => {
+    if (!server || !editedName.trim()) return;
+
+    const { error } = await supabase
+      .from('chat_servers')
+      .update({ name: editedName.trim() })
+      .eq('id', server.id);
+
+    if (error) {
+      toast.error('Failed to update server name');
+      return;
+    }
+
+    toast.success('Server name updated');
+    setIsEditing(false);
+    // Refresh parent component by closing and reopening
+    onOpenChange(false);
+    setTimeout(() => onOpenChange(true), 100);
+  };
+
+  const handleIconUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !server) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Image size must be less than 2MB');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Upload to storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${server.id}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('server-icons')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('server-icons')
+        .getPublicUrl(filePath);
+
+      // Update server with new icon URL
+      const { error: updateError } = await supabase
+        .from('chat_servers')
+        .update({ icon_url: publicUrl })
+        .eq('id', server.id);
+
+      if (updateError) throw updateError;
+
+      toast.success('Server icon updated');
+      // Refresh parent component
+      onOpenChange(false);
+      setTimeout(() => onOpenChange(true), 100);
+    } catch (error) {
+      console.error('Error uploading icon:', error);
+      toast.error('Failed to upload icon');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const isOwner = user?.id === server?.owner_id;
+
   if (!server) return null;
 
   return (
@@ -88,13 +176,75 @@ export function ServerInfoDialog({ open, onOpenChange, server }: ServerInfoDialo
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            {server.icon_url && (
+            <div className="relative">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={server.icon_url} />
                 <AvatarFallback>{server.name[0]}</AvatarFallback>
               </Avatar>
+              {isOwner && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-background border shadow-sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <Upload className="h-3 w-3" />
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleIconUpload}
+                  />
+                </>
+              )}
+            </div>
+            {isEditing ? (
+              <div className="flex items-center gap-2 flex-1">
+                <Input
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  className="h-8"
+                  autoFocus
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleSaveName}
+                >
+                  <Check className="h-4 w-4 text-green-500" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditedName(server.name);
+                  }}
+                >
+                  <X className="h-4 w-4 text-red-500" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 flex-1">
+                <span>{server.name}</span>
+                {isOwner && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Edit2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
             )}
-            {server.name}
           </DialogTitle>
         </DialogHeader>
 
