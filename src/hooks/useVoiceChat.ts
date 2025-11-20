@@ -42,7 +42,14 @@ export function useVoiceChat(channelId: string | null) {
 
     pc.ontrack = (event) => {
       console.log('Received remote track from:', peerId);
-      setRemoteStreams(prev => new Map(prev).set(peerId, event.streams[0]));
+      const stream = event.streams[0];
+      
+      // Ensure audio tracks are enabled
+      stream.getAudioTracks().forEach(track => {
+        track.enabled = true;
+      });
+      
+      setRemoteStreams(prev => new Map(prev).set(peerId, stream));
     };
 
     pc.onicecandidate = (event) => {
@@ -56,6 +63,31 @@ export function useVoiceChat(channelId: string | null) {
             candidate: event.candidate
           }
         });
+      }
+    };
+
+    // Monitor ICE connection state
+    pc.oniceconnectionstatechange = () => {
+      console.log(`ICE connection state for ${peerId}:`, pc.iceConnectionState);
+      
+      if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+        console.log(`Connection ${pc.iceConnectionState} for ${peerId}, attempting to reconnect...`);
+        setTimeout(() => {
+          if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+            pc.restartIce();
+          }
+        }, 2000);
+      }
+    };
+
+    // Monitor connection state
+    pc.onconnectionstatechange = () => {
+      console.log(`Connection state for ${peerId}:`, pc.connectionState);
+      
+      if (pc.connectionState === 'failed') {
+        console.log(`Peer connection failed for ${peerId}, recreating...`);
+        peerConnectionsRef.current.delete(peerId);
+        setTimeout(() => handleNewPeer(peerId), 1000);
       }
     };
 
@@ -232,12 +264,22 @@ export function useVoiceChat(channelId: string | null) {
 
   const connect = async () => {
     try {
+      // Enhanced audio constraints for mobile compatibility
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true
-        } 
+          autoGainControl: true,
+          sampleRate: 48000,
+          channelCount: 1
+        },
+        video: false
+      });
+      
+      // Ensure tracks are enabled
+      stream.getAudioTracks().forEach(track => {
+        track.enabled = true;
+        console.log('Local audio track settings:', track.getSettings());
       });
       
       localStreamRef.current = stream;
