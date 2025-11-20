@@ -268,7 +268,7 @@ export function ChatSidebar({
             <div className="space-y-1">
               <div className="px-2 py-1 flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground uppercase">
-                  Voice Channels
+                  Voice Channels (Beta)
                 </span>
                 {isOwner && (
                   <Button
