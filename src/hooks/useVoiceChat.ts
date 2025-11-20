@@ -26,6 +26,7 @@ export function useVoiceChat(channelId: string | null) {
   const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
   const channelRef = useRef<any>(null);
   const signalingChannelRef = useRef<any>(null);
+  const pendingCandidatesRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
 
   const createPeerConnection = async (peerId: string) => {
     if (peerConnectionsRef.current.has(peerId)) {
@@ -51,19 +52,31 @@ export function useVoiceChat(channelId: string | null) {
 
     pc.ontrack = (event) => {
       console.log('[Voice] ✓ Received remote track from:', peerId);
+      const track = event.track;
+      
       console.log('[Voice] Track details:', {
-        kind: event.track.kind,
-        enabled: event.track.enabled,
-        readyState: event.track.readyState,
-        muted: event.track.muted
+        kind: track.kind,
+        enabled: track.enabled,
+        readyState: track.readyState,
+        muted: track.muted
       });
       
       const stream = event.streams[0];
       
-      // Ensure audio tracks are enabled
-      stream.getAudioTracks().forEach(track => {
-        track.enabled = true;
-        console.log('[Voice] Remote track enabled:', track.id);
+      // CRITICAL: Unmute and enable all audio tracks
+      stream.getAudioTracks().forEach(audioTrack => {
+        audioTrack.enabled = true;
+        
+        // Listen for unmute event
+        audioTrack.addEventListener('unmute', () => {
+          console.log('[Voice] ✓ Track unmuted:', audioTrack.id);
+        });
+        
+        console.log('[Voice] Track setup complete:', {
+          id: audioTrack.id,
+          enabled: audioTrack.enabled,
+          muted: audioTrack.muted
+        });
       });
       
       setRemoteStreams(prev => {
@@ -120,6 +133,14 @@ export function useVoiceChat(channelId: string | null) {
   const handleNewPeer = async (peerId: string) => {
     if (peerId === user?.id) return;
     
+    // Only create offer if our userId is "greater" to avoid glare condition
+    const shouldCreateOffer = user!.id > peerId;
+    
+    if (!shouldCreateOffer) {
+      console.log('[Voice] Waiting for offer from:', peerId);
+      return;
+    }
+    
     console.log('[Voice] Creating offer for peer:', peerId);
     console.log('[Voice] Local stream exists:', !!localStreamRef.current);
     console.log('[Voice] Local tracks:', localStreamRef.current?.getTracks().map(t => ({
@@ -163,6 +184,15 @@ export function useVoiceChat(channelId: string | null) {
     
     try {
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      
+      // Process any pending ICE candidates
+      const pending = pendingCandidatesRef.current.get(from) || [];
+      console.log('[Voice] Processing', pending.length, 'pending ICE candidates');
+      for (const candidate of pending) {
+        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      }
+      pendingCandidatesRef.current.delete(from);
+      
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       
@@ -185,15 +215,25 @@ export function useVoiceChat(channelId: string | null) {
   const handleAnswer = async (from: string, answer: RTCSessionDescriptionInit) => {
     if (from === user?.id) return;
     
-    console.log('Received answer from:', from);
+    console.log('[Voice] Received answer from:', from);
     const pc = peerConnectionsRef.current.get(from);
     
-    if (pc) {
+    if (pc && pc.signalingState !== 'stable') {
       try {
         await pc.setRemoteDescription(new RTCSessionDescription(answer));
+        
+        // Process any pending ICE candidates
+        const pending = pendingCandidatesRef.current.get(from) || [];
+        console.log('[Voice] Processing', pending.length, 'pending ICE candidates');
+        for (const candidate of pending) {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        pendingCandidatesRef.current.delete(from);
       } catch (error) {
-        console.error('Error handling answer:', error);
+        console.error('[Voice] Error handling answer:', error);
       }
+    } else {
+      console.log('[Voice] Ignoring answer - connection in stable state or not found');
     }
   };
 
@@ -203,10 +243,20 @@ export function useVoiceChat(channelId: string | null) {
     const pc = peerConnectionsRef.current.get(from);
     
     if (pc) {
-      try {
-        await pc.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch (error) {
-        console.error('Error adding ICE candidate:', error);
+      // Only add candidate if remote description is set
+      if (pc.remoteDescription) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          console.log('[Voice] Added ICE candidate from:', from);
+        } catch (error) {
+          console.error('[Voice] Error adding ICE candidate:', error);
+        }
+      } else {
+        // Queue candidate until remote description is set
+        console.log('[Voice] Queueing ICE candidate from:', from);
+        const pending = pendingCandidatesRef.current.get(from) || [];
+        pending.push(candidate);
+        pendingCandidatesRef.current.set(from, pending);
       }
     }
   };
@@ -350,6 +400,7 @@ export function useVoiceChat(channelId: string | null) {
 
     peerConnectionsRef.current.forEach(pc => pc.close());
     peerConnectionsRef.current.clear();
+    pendingCandidatesRef.current.clear();
 
     if (channelRef.current) {
       channelRef.current.untrack();
@@ -357,6 +408,7 @@ export function useVoiceChat(channelId: string | null) {
 
     setIsConnected(false);
     setParticipants([]);
+    setRemoteStreams(new Map());
   };
 
   const toggleMute = async () => {
