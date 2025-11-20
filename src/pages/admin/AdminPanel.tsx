@@ -894,32 +894,32 @@ export default function AdminPanel() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
+                  {filteredUsers.map((userRow) => (
+                    <TableRow key={userRow.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarImage src={user.avatar_url || ''} />
-                            <AvatarFallback>{user.full_name.charAt(0)}</AvatarFallback>
+                            <AvatarImage src={userRow.avatar_url || ''} />
+                            <AvatarFallback>{userRow.full_name.charAt(0)}</AvatarFallback>
                           </Avatar>
-                          <span className="font-medium">{user.full_name}</span>
+                          <span className="font-medium">{userRow.full_name}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{userRow.email}</TableCell>
                       <TableCell>
-                        <Badge variant={getRoleBadgeVariant(user.role || 'student')}>
-                          {user.role || 'student'}
+                        <Badge variant={getRoleBadgeVariant(userRow.role || 'student')}>
+                          {userRow.role || 'student'}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {new Date(user.created_at).toLocaleDateString()}
+                        {new Date(userRow.created_at).toLocaleDateString()}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteUser(user.id, user.full_name)}
-                          disabled={user.id === user?.id}
+                          onClick={() => handleDeleteUser(userRow.id, userRow.full_name)}
+                          disabled={userRow.id === user?.id}
                           className="hover:bg-destructive/10 hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
