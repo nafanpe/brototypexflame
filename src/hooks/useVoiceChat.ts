@@ -256,6 +256,29 @@ export function useVoiceChat(channelId: string | null) {
     if (from === user?.id) return;
     
     console.log('[Voice] Received offer from:', from);
+    
+    // CRITICAL: Don't process offers if connection is already stable and working
+    const existingPc = peerConnectionsRef.current.get(from);
+    if (existingPc) {
+      const connState = existingPc.connectionState;
+      const iceState = existingPc.iceConnectionState;
+      
+      // If connection is working, ignore the new offer to prevent renegotiation
+      if (connState === 'connected' && (iceState === 'connected' || iceState === 'completed')) {
+        console.log('[Voice] ⚠️ Ignoring offer - connection already stable:', from, 
+          'connState:', connState, 'iceState:', iceState);
+        return;
+      }
+      
+      // If connection is broken, close it first
+      if (connState === 'failed' || connState === 'closed') {
+        console.log('[Voice] Closing failed/closed connection before processing offer:', from);
+        existingPc.close();
+        peerConnectionsRef.current.delete(from);
+      }
+    }
+    
+    console.log('[Voice] Processing offer from:', from);
     console.log('[Voice] Local stream for answer exists:', !!localStreamRef.current);
     
     const pc = await createPeerConnection(from);
