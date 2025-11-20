@@ -3,6 +3,7 @@ import { Phone, PhoneOff, Mic, MicOff, Volume2 } from 'lucide-react';
 import { useVoiceChat } from '@/hooks/useVoiceChat';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useEffect, useRef } from 'react';
 
 interface VoiceChannelProps {
   channelId: string;
@@ -10,7 +11,30 @@ interface VoiceChannelProps {
 }
 
 export function VoiceChannel({ channelId, channelName }: VoiceChannelProps) {
-  const { isConnected, isMuted, participants, connect, disconnect, toggleMute } = useVoiceChat(channelId);
+  const { isConnected, isMuted, participants, remoteStreams, connect, disconnect, toggleMute } = useVoiceChat(channelId);
+  const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
+
+  useEffect(() => {
+    remoteStreams.forEach((stream, peerId) => {
+      let audioEl = audioElementsRef.current.get(peerId);
+      
+      if (!audioEl) {
+        audioEl = document.createElement('audio');
+        audioEl.autoplay = true;
+        audioEl.setAttribute('playsinline', '');
+        audioElementsRef.current.set(peerId, audioEl);
+      }
+      
+      audioEl.srcObject = stream;
+    });
+
+    audioElementsRef.current.forEach((audioEl, peerId) => {
+      if (!remoteStreams.has(peerId)) {
+        audioEl.srcObject = null;
+        audioElementsRef.current.delete(peerId);
+      }
+    });
+  }, [remoteStreams]);
 
   const handleConnect = async () => {
     try {
