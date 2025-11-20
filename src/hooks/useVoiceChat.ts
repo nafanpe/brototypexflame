@@ -12,8 +12,25 @@ interface VoiceParticipant {
 const ICE_SERVERS = {
   iceServers: [
     { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
-  ]
+    { urls: 'stun:stun1.l.google.com:19302' },
+    { urls: 'stun:stun2.l.google.com:19302' },
+    {
+      urls: 'turn:openrelay.metered.ca:80',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    },
+    {
+      urls: 'turn:openrelay.metered.ca:443',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    },
+    {
+      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+      username: 'openrelayproject',
+      credential: 'openrelayproject'
+    }
+  ],
+  iceCandidatePoolSize: 10
 };
 
 export function useVoiceChat(channelId: string | null) {
@@ -30,24 +47,31 @@ export function useVoiceChat(channelId: string | null) {
 
   const createPeerConnection = async (peerId: string) => {
     if (peerConnectionsRef.current.has(peerId)) {
-      return peerConnectionsRef.current.get(peerId)!;
+      const existing = peerConnectionsRef.current.get(peerId)!;
+      console.log('[Voice] Reusing existing peer connection for:', peerId, 'state:', existing.connectionState);
+      return existing;
     }
 
+    console.log('[Voice] Creating NEW peer connection for:', peerId);
     const pc = new RTCPeerConnection(ICE_SERVERS);
+    
+    if (!localStreamRef.current) {
+      console.error('[Voice] ⚠️ WARNING: No local stream when creating peer connection!');
+    }
     
     if (localStreamRef.current) {
       console.log('[Voice] Adding local tracks to peer connection:', peerId);
       localStreamRef.current.getTracks().forEach(track => {
         const sender = pc.addTrack(track, localStreamRef.current!);
-        console.log('[Voice] Added track:', {
+        console.log('[Voice] ✓ Added track:', {
           trackId: track.id,
           kind: track.kind,
           enabled: track.enabled,
+          readyState: track.readyState,
+          muted: track.muted,
           senderId: sender.track?.id
         });
       });
-    } else {
-      console.warn('[Voice] No local stream available when creating peer connection');
     }
 
     pc.ontrack = (event) => {
@@ -58,31 +82,46 @@ export function useVoiceChat(channelId: string | null) {
         kind: track.kind,
         enabled: track.enabled,
         readyState: track.readyState,
-        muted: track.muted
+        muted: track.muted,
+        id: track.id
       });
       
       const stream = event.streams[0];
       
-      // CRITICAL: Unmute and enable all audio tracks
+      // CRITICAL: Force unmute and enable
       stream.getAudioTracks().forEach(audioTrack => {
         audioTrack.enabled = true;
         
-        // Listen for unmute event
+        // Monitor track state changes
         audioTrack.addEventListener('unmute', () => {
-          console.log('[Voice] ✓ Track unmuted:', audioTrack.id);
+          console.log('[Voice] ✓✓ Track UNMUTED:', audioTrack.id);
         });
         
-        console.log('[Voice] Track setup complete:', {
+        audioTrack.addEventListener('mute', () => {
+          console.log('[Voice] ⚠️ Track MUTED:', audioTrack.id);
+        });
+        
+        audioTrack.addEventListener('ended', () => {
+          console.log('[Voice] Track ended:', audioTrack.id);
+        });
+        
+        console.log('[Voice] Track configured:', {
           id: audioTrack.id,
           enabled: audioTrack.enabled,
-          muted: audioTrack.muted
+          muted: audioTrack.muted,
+          readyState: audioTrack.readyState
         });
+        
+        // Try to force unmute if currently muted
+        if (audioTrack.muted) {
+          console.log('[Voice] ⚠️ Track is muted, this means no audio packets are coming!');
+        }
       });
       
       setRemoteStreams(prev => {
         const newMap = new Map(prev);
         newMap.set(peerId, stream);
-        console.log('[Voice] Remote streams updated, total:', newMap.size);
+        console.log('[Voice] ✓ Remote streams updated, total:', newMap.size);
         return newMap;
       });
     };
@@ -103,26 +142,49 @@ export function useVoiceChat(channelId: string | null) {
 
     // Monitor ICE connection state
     pc.oniceconnectionstatechange = () => {
-      console.log(`ICE connection state for ${peerId}:`, pc.iceConnectionState);
+      console.log(`[Voice] ICE connection state for ${peerId}:`, pc.iceConnectionState);
       
-      if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
-        console.log(`Connection ${pc.iceConnectionState} for ${peerId}, attempting to reconnect...`);
+      if (pc.iceConnectionState === 'failed') {
+        console.log(`[Voice] ⚠️ Connection failed for ${peerId}, attempting ICE restart...`);
+        
+        // Try ICE restart first
+        pc.restartIce();
+        
+        // If still failed after 3 seconds, recreate connection
         setTimeout(() => {
-          if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+          if (pc.iceConnectionState === 'failed') {
+            console.log(`[Voice] ICE restart failed, recreating connection for ${peerId}`);
+            peerConnectionsRef.current.delete(peerId);
+            handleNewPeer(peerId);
+          }
+        }, 3000);
+      } else if (pc.iceConnectionState === 'disconnected') {
+        console.log(`[Voice] ⚠️ Connection disconnected for ${peerId}, will retry...`);
+        
+        // Wait a bit before restarting
+        setTimeout(() => {
+          if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+            console.log(`[Voice] Attempting ICE restart for ${peerId}`);
             pc.restartIce();
           }
         }, 2000);
+      } else if (pc.iceConnectionState === 'connected') {
+        console.log(`[Voice] ✓✓ ICE connection established for ${peerId}`);
+      } else if (pc.iceConnectionState === 'completed') {
+        console.log(`[Voice] ✓✓✓ ICE connection completed for ${peerId}`);
       }
     };
 
     // Monitor connection state
     pc.onconnectionstatechange = () => {
-      console.log(`Connection state for ${peerId}:`, pc.connectionState);
+      console.log(`[Voice] Connection state for ${peerId}:`, pc.connectionState);
       
       if (pc.connectionState === 'failed') {
-        console.log(`Peer connection failed for ${peerId}, recreating...`);
+        console.log(`[Voice] ⚠️⚠️ Peer connection FAILED for ${peerId}, recreating...`);
         peerConnectionsRef.current.delete(peerId);
         setTimeout(() => handleNewPeer(peerId), 1000);
+      } else if (pc.connectionState === 'connected') {
+        console.log(`[Voice] ✓✓✓ Peer connection fully CONNECTED for ${peerId}`);
       }
     };
 
