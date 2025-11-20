@@ -70,6 +70,10 @@ export default function Chat() {
     setSelectedChannel(null);
   };
 
+  const handleServerUpdated = (updatedServer: ChatServer) => {
+    setSelectedServer(updatedServer);
+  };
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
@@ -96,6 +100,7 @@ export default function Chat() {
         isDMMode={isDMMode}
         onSelectChannel={handleSelectChannel}
         onSelectDM={handleSelectDM}
+        onServerUpdated={handleServerUpdated}
       />
 
       {/* Pane 3: Chat Area */}

@@ -23,9 +23,10 @@ interface ServerInfoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   server: ChatServer | null;
+  onServerUpdated?: (updatedServer: ChatServer) => void;
 }
 
-export function ServerInfoDialog({ open, onOpenChange, server }: ServerInfoDialogProps) {
+export function ServerInfoDialog({ open, onOpenChange, server, onServerUpdated }: ServerInfoDialogProps) {
   const { user } = useAuth();
   const [members, setMembers] = useState<ServerMember[]>([]);
   const [ownerProfile, setOwnerProfile] = useState<{ full_name: string; avatar_url?: string } | null>(null);
@@ -107,9 +108,8 @@ export function ServerInfoDialog({ open, onOpenChange, server }: ServerInfoDialo
 
     toast.success('Server name updated');
     setIsEditing(false);
-    // Refresh parent component by closing and reopening
-    onOpenChange(false);
-    setTimeout(() => onOpenChange(true), 100);
+    // Notify parent of the update for immediate UI refresh
+    onServerUpdated?.({ ...server, name: editedName.trim() });
   };
 
   const handleIconUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,9 +156,8 @@ export function ServerInfoDialog({ open, onOpenChange, server }: ServerInfoDialo
       if (updateError) throw updateError;
 
       toast.success('Server icon updated');
-      // Refresh parent component
-      onOpenChange(false);
-      setTimeout(() => onOpenChange(true), 100);
+      // Notify parent of the update for immediate UI refresh
+      onServerUpdated?.({ ...server, icon_url: publicUrl });
     } catch (error) {
       console.error('Error uploading icon:', error);
       toast.error('Failed to upload icon');

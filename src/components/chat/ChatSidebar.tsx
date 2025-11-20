@@ -17,6 +17,7 @@ interface ChatSidebarProps {
   isDMMode: boolean;
   onSelectChannel: (channel: ChatChannel) => void;
   onSelectDM: (dm: DMConversation) => void;
+  onServerUpdated?: (updatedServer: ChatServer) => void;
 }
 
 export function ChatSidebar({
@@ -25,7 +26,8 @@ export function ChatSidebar({
   selectedDM,
   isDMMode,
   onSelectChannel,
-  onSelectDM
+  onSelectDM,
+  onServerUpdated
 }: ChatSidebarProps) {
   const { user } = useAuth();
   const [channels, setChannels] = useState<ChatChannel[]>([]);
@@ -331,6 +333,7 @@ export function ChatSidebar({
         open={isServerInfoOpen}
         onOpenChange={setIsServerInfoOpen}
         server={selectedServer}
+        onServerUpdated={onServerUpdated}
       />
     </div>
   );
