@@ -53,6 +53,21 @@ export function ChatArea({
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  // Fetch user role on mount
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      setUserRole(data?.role || null);
+    };
+    fetchUserRole();
+  }, [user]);
 
   useEffect(() => {
     if (selectedChannel) {
@@ -146,6 +161,18 @@ export function ChatArea({
           setMessages((prev) => [...prev, newMessage]);
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'channel_messages',
+          filter: `channel_id=eq.${selectedChannel.id}`
+        },
+        (payload) => {
+          setMessages((prev) => prev.filter(msg => msg.id !== payload.old.id));
+        }
+      )
       .subscribe();
 
     return () => {
@@ -185,6 +212,18 @@ export function ChatArea({
           setMessages((prev) => [...prev, newMessage]);
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'direct_messages',
+          filter: `conversation_id=eq.${selectedDM.id}`
+        },
+        (payload) => {
+          setMessages((prev) => prev.filter(msg => msg.id !== payload.old.id));
+        }
+      )
       .subscribe();
 
     return () => {
@@ -218,6 +257,34 @@ export function ChatArea({
     } catch (error: any) {
       console.error('Send message error:', error);
       throw error; // Re-throw so MessageInput can handle it
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!user) return;
+
+    const confirmDelete = confirm('Are you sure you want to delete this message?');
+    if (!confirmDelete) return;
+
+    try {
+      if (selectedChannel) {
+        const { error } = await supabase
+          .from('channel_messages')
+          .delete()
+          .eq('id', messageId);
+        
+        if (error) throw error;
+      } else if (selectedDM) {
+        const { error } = await supabase
+          .from('direct_messages')
+          .delete()
+          .eq('id', messageId);
+        
+        if (error) throw error;
+      }
+    } catch (error: any) {
+      console.error('Delete message error:', error);
+      alert('Failed to delete message');
     }
   };
 
@@ -387,13 +454,21 @@ export function ChatArea({
           </div>
         ) : (
           <div className="space-y-4 py-4">
-            {messages.map((message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                isOwn={(message.user_id || message.sender_id) === user?.id}
-              />
-            ))}
+            {messages.map((message) => {
+              const messageOwnerId = message.user_id || message.sender_id;
+              const isOwn = messageOwnerId === user?.id;
+              const canDelete = isOwn || userRole === 'admin';
+              
+              return (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  isOwn={isOwn}
+                  canDelete={canDelete}
+                  onDelete={handleDeleteMessage}
+                />
+              );
+            })}
           </div>
         )}
       </ScrollArea>

@@ -1,4 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { MoreVertical, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -6,6 +9,7 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface MessageBubbleProps {
   message: {
+    id: string;
     content: string;
     image_url: string | null;
     created_at: string;
@@ -15,11 +19,13 @@ interface MessageBubbleProps {
     };
   };
   isOwn: boolean;
+  canDelete: boolean;
+  onDelete: (messageId: string) => void;
 }
 
-export function MessageBubble({ message, isOwn }: MessageBubbleProps) {
+export function MessageBubble({ message, isOwn, canDelete, onDelete }: MessageBubbleProps) {
   return (
-    <div className={`flex gap-3 ${isOwn ? 'flex-row-reverse' : ''}`}>
+    <div className={`flex gap-3 group ${isOwn ? 'flex-row-reverse' : ''}`}>
       <Avatar className="h-10 w-10">
         <AvatarImage src={message.profiles?.avatar_url || ''} />
         <AvatarFallback>
@@ -38,6 +44,28 @@ export function MessageBubble({ message, isOwn }: MessageBubbleProps) {
               minute: '2-digit'
             })}
           </span>
+          {canDelete && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <MoreVertical className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={() => onDelete(message.id)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Message
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         <div
