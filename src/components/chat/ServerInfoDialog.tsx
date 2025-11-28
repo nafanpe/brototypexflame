@@ -41,6 +41,28 @@ export function ServerInfoDialog({ open, onOpenChange, server, onServerUpdated, 
       fetchServerDetails();
       setEditedName(server.name);
       setIsEditing(false);
+
+      // Subscribe to server_members changes for real-time updates
+      const channel = supabase
+        .channel(`server-members-${server.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'server_members',
+            filter: `server_id=eq.${server.id}`
+          },
+          () => {
+            // Refetch members when someone joins or leaves
+            fetchServerDetails();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [server, open]);
 
