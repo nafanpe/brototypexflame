@@ -38,6 +38,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import brototypeLogo from '@/assets/brototype-logo.png';
 import { MobileSidebar } from '@/components/MobileSidebar';
+import NewsTicker from '@/components/NewsTicker';
 
 interface Complaint {
   id: string;
@@ -351,6 +352,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <NewsTicker />
       <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 animate-fade-in">

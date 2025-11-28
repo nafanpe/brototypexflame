@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, Upload, X, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, Upload, X, Sparkles, Mic, MicOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function NewComplaint() {
@@ -30,12 +30,48 @@ export default function NewComplaint() {
   const [adminOnly, setAdminOnly] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [isPolishing, setIsPolishing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     if (!user) {
       navigate('/auth');
     }
-  }, [user, navigate]);
+
+    // Initialize speech recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setDescription(prev => prev ? `${prev} ${transcript}` : transcript);
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not access microphone',
+        });
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [user, navigate, toast]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -46,6 +82,25 @@ export default function NewComplaint() {
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
+  };
+
+  const toggleVoiceInput = () => {
+    if (!recognitionRef.current) {
+      toast({
+        variant: 'destructive',
+        title: 'Not Supported',
+        description: 'Speech recognition is not supported in this browser',
+      });
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
   };
 
   const handleMagicRewrite = () => {
@@ -219,26 +274,47 @@ export default function NewComplaint() {
                       ({description.length}/1500)
                     </span>
                   </Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleMagicRewrite}
-                    disabled={description.length === 0 || isPolishing}
-                    className="gap-2"
-                  >
-                    {isPolishing ? (
-                      <>
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        Polishing...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-3 w-3" />
-                        AI Polish
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={toggleVoiceInput}
+                      className="gap-2"
+                    >
+                      {isListening ? (
+                        <>
+                          <MicOff className="h-3 w-3 animate-pulse text-red-500" />
+                          Listening...
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="h-3 w-3" />
+                          Voice
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleMagicRewrite}
+                      disabled={description.length === 0 || isPolishing}
+                      className="gap-2"
+                    >
+                      {isPolishing ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Polishing...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-3 w-3" />
+                          AI Polish
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
                 <Textarea
                   id="description"
@@ -273,14 +349,21 @@ export default function NewComplaint() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    placeholder="e.g., Building A, Room 101"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    maxLength={50}
-                  />
+                  <Label>Location</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['Lab 1', 'Lab 2', 'Lab 3', 'Cafeteria', 'Library', 'Office'].map((loc) => (
+                      <Button
+                        key={loc}
+                        type="button"
+                        variant={location === loc ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setLocation(loc)}
+                        className="w-full"
+                      >
+                        {loc}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
