@@ -104,30 +104,33 @@ export default function NewComplaint() {
   };
 
   const handleMagicRewrite = () => {
-    if (!description.trim()) return;
+    if (!description.trim() || description.length < 3) return;
 
     setIsPolishing(true);
     
     // Simulate AI processing with 1.5 second delay
     setTimeout(() => {
-      const text = description.toLowerCase();
-      let polishedText = '';
+      const lower = description.toLowerCase();
+      let polished = '';
 
-      if (text.includes('wifi') || text.includes('net') || text.includes('internet')) {
-        polishedText = 'The internet connectivity in the facility is unstable, hindering my workflow and academic activities.';
-      } else if (text.includes('ac') || text.includes('hot') || text.includes('cold') || text.includes('temperature')) {
-        polishedText = 'The air conditioning unit appears to be malfunctioning, resulting in uncomfortable temperatures that affect productivity.';
-      } else if (text.includes('clean') || text.includes('dirty') || text.includes('mess')) {
-        polishedText = 'The facility requires maintenance and cleaning services to ensure a hygienic and comfortable environment.';
-      } else if (text.includes('light') || text.includes('dark') || text.includes('bulb')) {
-        polishedText = 'There is insufficient lighting in the working area, creating visibility issues that impact work quality.';
-      } else if (text.includes('noise') || text.includes('loud') || text.includes('sound')) {
-        polishedText = 'Excessive noise levels in the facility are disrupting concentration and affecting the learning environment.';
-      } else {
-        polishedText = 'I am encountering a technical issue that requires attention from the administration to ensure optimal facility operations.';
+      // 1. Connectivity Issues
+      if (lower.includes('wifi') || lower.includes('internet') || lower.includes('network') || lower.includes('connect')) {
+        polished = `I am writing to report persistent connectivity issues regarding: "${description}". The network instability is currently hindering workflow efficiency in this sector. Please investigate the local access points.`;
+      } 
+      // 2. Hardware/Equipment Issues
+      else if (lower.includes('pc') || lower.includes('computer') || lower.includes('monitor') || lower.includes('screen') || lower.includes('mouse') || lower.includes('keyboard')) {
+        polished = `I encountered a hardware malfunction with the following equipment: "${description}". The device is not performing as expected and may require technical diagnosis or replacement.`;
+      } 
+      // 3. Environment/Facilities (AC, Lights, Water)
+      else if (lower.includes('ac') || lower.includes('air') || lower.includes('hot') || lower.includes('cold') || lower.includes('water') || lower.includes('leak') || lower.includes('light')) {
+        polished = `I wish to bring attention to a facility maintenance issue: "${description}". The current environmental conditions are suboptimal for the workspace. Requesting a maintenance check.`;
+      } 
+      // 4. Default "Professional Wrapper" (Preserves user input)
+      else {
+        polished = `I would like to formally report an issue regarding the following: "${description}". This matter requires attention from the administration to ensure facility operations run smoothly.`;
       }
 
-      setDescription(polishedText);
+      setDescription(polished);
       setIsPolishing(false);
       
       toast({
@@ -305,7 +308,7 @@ export default function NewComplaint() {
                       {isPolishing ? (
                         <>
                           <Loader2 className="h-3 w-3 animate-spin" />
-                          Polishing...
+                          Analyzing...
                         </>
                       ) : (
                         <>
