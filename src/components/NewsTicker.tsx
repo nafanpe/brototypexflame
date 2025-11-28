@@ -42,7 +42,7 @@ export default function NewsTicker() {
   }, []);
 
   return (
-    <div className="bg-black text-white overflow-hidden py-2">
+    <div className="bg-black text-white overflow-hidden py-1.5 h-8 flex items-center">
       <div ref={tickerRef} className="flex whitespace-nowrap">
         <div className="ticker-content flex">
           {newsItems.map((item, index) => (
