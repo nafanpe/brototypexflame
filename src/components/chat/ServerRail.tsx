@@ -25,7 +25,8 @@ export function ServerRail({ selectedServer, onSelectServer, onDMMode, isDMMode 
   useEffect(() => {
     if (user) {
       fetchUserServers();
-      subscribeToServers();
+      const cleanup = subscribeToServers();
+      return cleanup;
     }
   }, [user]);
 
