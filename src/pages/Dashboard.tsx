@@ -351,9 +351,15 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <NewsTicker />
-      <main className="container mx-auto px-4 py-8">
+    <div className="flex flex-col h-full w-full overflow-hidden bg-background">
+      {/* Ticker Section (Fixed Height, No Shrink) */}
+      <div className="flex-none w-full z-10">
+        <NewsTicker />
+      </div>
+
+      {/* Scrollable Dashboard Content (Fills remaining space) */}
+      <div className="flex-1 overflow-y-auto">
+        <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 animate-fade-in">
           <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
@@ -699,7 +705,8 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
