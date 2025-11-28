@@ -103,13 +103,31 @@ export default function NewComplaint() {
     }
   };
 
-  const handleMagicRewrite = () => {
+  const handleMagicRewrite = async () => {
     if (!description.trim() || description.length < 3) return;
 
     setIsPolishing(true);
     
-    // Simulate AI processing with 1.5 second delay
-    setTimeout(() => {
+    try {
+      // Try Real AI via Edge Function
+      const { data, error } = await supabase.functions.invoke('polish-complaint', {
+        body: { description }
+      });
+
+      if (error || !data?.polishedText) {
+        throw new Error('AI service unavailable');
+      }
+
+      setDescription(data.polishedText);
+      toast({
+        title: 'Text Polished with AI ✨',
+        description: 'Your description has been professionally rewritten.',
+      });
+
+    } catch (err) {
+      // Fallback to Local Smart Template Logic
+      console.log('Falling back to local polish:', err);
+      
       const lower = description.toLowerCase();
       let polished = '';
 
@@ -131,13 +149,13 @@ export default function NewComplaint() {
       }
 
       setDescription(polished);
-      setIsPolishing(false);
-      
       toast({
         title: 'Text Polished ✨',
-        description: 'Your description has been professionally rewritten.',
+        description: 'Your description has been professionally rewritten (offline mode).',
       });
-    }, 1500);
+    } finally {
+      setIsPolishing(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
