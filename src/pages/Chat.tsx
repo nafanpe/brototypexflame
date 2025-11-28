@@ -57,35 +57,31 @@ export default function Chat() {
       if (!joinServerId || !user) return;
 
       try {
-        // Check if server exists
-        const { data: server, error: serverError } = await supabase
-          .from('chat_servers')
-          .select('*')
-          .eq('id', joinServerId)
-          .maybeSingle();
-
-        if (serverError || !server) {
-          toast.error('Server not found');
-          setSearchParams({});
-          return;
-        }
-
         // Check if already a member
         const { data: existingMember } = await supabase
           .from('server_members')
-          .select('*')
+          .select('server_id')
           .eq('server_id', joinServerId)
           .eq('user_id', user.id)
           .maybeSingle();
 
         if (existingMember) {
-          toast.info('You are already a member of this server');
-          setSelectedServer(server as ChatServer);
+          // Already a member - fetch server and select it
+          const { data: server } = await supabase
+            .from('chat_servers')
+            .select('*')
+            .eq('id', joinServerId)
+            .maybeSingle();
+          
+          if (server) {
+            toast.info('You are already a member of this server');
+            setSelectedServer(server as ChatServer);
+          }
           setSearchParams({});
           return;
         }
 
-        // Join the server
+        // Try to join the server directly
         const { error: joinError } = await supabase
           .from('server_members')
           .insert({
@@ -94,10 +90,24 @@ export default function Chat() {
           });
 
         if (joinError) {
-          toast.error('Failed to join server');
           console.error('Join error:', joinError);
+          toast.error('Unable to join this server. The invite link may be invalid.');
+          setSearchParams({});
+          return;
+        }
+
+        // Successfully joined - now fetch the server info
+        const { data: server, error: serverError } = await supabase
+          .from('chat_servers')
+          .select('*')
+          .eq('id', joinServerId)
+          .maybeSingle();
+
+        if (serverError || !server) {
+          toast.error('Joined server but failed to load server info. Please refresh.');
+          console.error('Server fetch error:', serverError);
         } else {
-          toast.success(`Joined ${server.name}!`);
+          toast.success(`Successfully joined ${server.name}!`);
           setSelectedServer(server as ChatServer);
         }
       } catch (error) {
