@@ -12,7 +12,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Loader2, Upload, X } from 'lucide-react';
+import { ArrowLeft, Loader2, Upload, X, Sparkles } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 export default function NewComplaint() {
   const { user } = useAuth();
@@ -28,6 +29,7 @@ export default function NewComplaint() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [adminOnly, setAdminOnly] = useState(false);
   const [images, setImages] = useState<File[]>([]);
+  const [isPolishing, setIsPolishing] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -44,6 +46,40 @@ export default function NewComplaint() {
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
+  };
+
+  const handleMagicRewrite = () => {
+    if (!description.trim()) return;
+
+    setIsPolishing(true);
+    
+    // Simulate AI processing with 1.5 second delay
+    setTimeout(() => {
+      const text = description.toLowerCase();
+      let polishedText = '';
+
+      if (text.includes('wifi') || text.includes('net') || text.includes('internet')) {
+        polishedText = 'The internet connectivity in the facility is unstable, hindering my workflow and academic activities.';
+      } else if (text.includes('ac') || text.includes('hot') || text.includes('cold') || text.includes('temperature')) {
+        polishedText = 'The air conditioning unit appears to be malfunctioning, resulting in uncomfortable temperatures that affect productivity.';
+      } else if (text.includes('clean') || text.includes('dirty') || text.includes('mess')) {
+        polishedText = 'The facility requires maintenance and cleaning services to ensure a hygienic and comfortable environment.';
+      } else if (text.includes('light') || text.includes('dark') || text.includes('bulb')) {
+        polishedText = 'There is insufficient lighting in the working area, creating visibility issues that impact work quality.';
+      } else if (text.includes('noise') || text.includes('loud') || text.includes('sound')) {
+        polishedText = 'Excessive noise levels in the facility are disrupting concentration and affecting the learning environment.';
+      } else {
+        polishedText = 'I am encountering a technical issue that requires attention from the administration to ensure optimal facility operations.';
+      }
+
+      setDescription(polishedText);
+      setIsPolishing(false);
+      
+      toast({
+        title: 'Text Polished ✨',
+        description: 'Your description has been professionally rewritten.',
+      });
+    }, 1500);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,6 +158,13 @@ export default function NewComplaint() {
         }
       }
 
+      // Fire confetti celebration
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+
       toast({
         title: 'Complaint Submitted! 🎉',
         description: `Your complaint #${complaint.complaint_number} has been created successfully.`,
@@ -169,12 +212,34 @@ export default function NewComplaint() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">
-                  Description <span className="text-danger">*</span>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    ({description.length}/1500)
-                  </span>
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="description">
+                    Description <span className="text-danger">*</span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      ({description.length}/1500)
+                    </span>
+                  </Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleMagicRewrite}
+                    disabled={description.length === 0 || isPolishing}
+                    className="gap-2"
+                  >
+                    {isPolishing ? (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Polishing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-3 w-3" />
+                        AI Polish
+                      </>
+                    )}
+                  </Button>
+                </div>
                 <Textarea
                   id="description"
                   placeholder="Provide detailed information about your complaint"

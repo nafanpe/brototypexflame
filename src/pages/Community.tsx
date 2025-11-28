@@ -59,6 +59,7 @@ export default function Community() {
   const [topPosts, setTopPosts] = useState<Post[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [trendingTopics, setTrendingTopics] = useState<TrendingTopic[]>([]);
+  const [topContributors, setTopContributors] = useState<{ user_id: string; full_name: string; avatar_url: string | null; post_count: number }[]>([]);
 
   useEffect(() => {
     if (!user && !loading) {
@@ -72,6 +73,7 @@ export default function Community() {
       fetchTopComplaints();
       fetchTopPosts();
       fetchTrendingTopics();
+      fetchTopContributors();
       subscribeToRealtimePosts();
     }
   }, [user, loading]);
@@ -186,6 +188,44 @@ export default function Community() {
       .map(([word, count]) => ({ word, count }));
 
     setTrendingTopics(topWords);
+  };
+
+  const fetchTopContributors = async () => {
+    try {
+      const { data: posts, error } = await supabase
+        .from('community_posts')
+        .select('user_id, profiles:user_id(full_name, avatar_url)')
+        .limit(100);
+
+      if (error || !posts) return;
+
+      // Count posts per user
+      const userCounts: { [key: string]: { count: number; profile: any } } = {};
+      
+      posts.forEach(post => {
+        if (post.user_id) {
+          if (!userCounts[post.user_id]) {
+            userCounts[post.user_id] = { count: 0, profile: post.profiles };
+          }
+          userCounts[post.user_id].count++;
+        }
+      });
+
+      // Convert to array and sort
+      const contributors = Object.entries(userCounts)
+        .map(([user_id, data]) => ({
+          user_id,
+          full_name: data.profile?.full_name || 'Unknown User',
+          avatar_url: data.profile?.avatar_url || null,
+          post_count: data.count
+        }))
+        .sort((a, b) => b.post_count - a.post_count)
+        .slice(0, 3);
+
+      setTopContributors(contributors);
+    } catch (error) {
+      console.error('Error fetching top contributors:', error);
+    }
   };
 
   const subscribeToRealtimePosts = () => {
@@ -472,6 +512,39 @@ export default function Community() {
                 )}
               </div>
             </div>
+
+            {/* Top Contributors */}
+            {topContributors.length > 0 && (
+              <div className="bg-card dark:bg-black border border-border dark:border-gray-800 rounded-lg p-4">
+                <h3 className="font-semibold mb-4 text-foreground dark:text-white flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Top Contributors
+                </h3>
+                <div className="space-y-3">
+                  {topContributors.map((contributor, index) => (
+                    <div key={contributor.user_id} className="flex items-center gap-3 py-2 hover:bg-accent dark:hover:bg-gray-900 rounded-md px-2 transition-colors">
+                      <span className="text-2xl">
+                        {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                      </span>
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={contributor.avatar_url || ''} />
+                        <AvatarFallback className="text-xs">
+                          {contributor.full_name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-foreground dark:text-white truncate">
+                          {contributor.full_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground dark:text-gray-500">
+                          {contributor.post_count} {contributor.post_count === 1 ? 'post' : 'posts'}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Top Complaints */}
             <div className="bg-card dark:bg-black border border-border dark:border-gray-800 rounded-lg p-4">

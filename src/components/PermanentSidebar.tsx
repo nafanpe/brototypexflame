@@ -10,6 +10,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNewPost } from "@/contexts/NewPostContext";
 import logo from "@/assets/brototype-logo.png";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Badge } from "./ui/badge";
 
 export function PermanentSidebar() {
   const { user, signOut } = useAuth();
@@ -76,17 +78,58 @@ export function PermanentSidebar() {
       {/* Logo Section with Toggle */}
       <div className="p-6 border-b border-sidebar-border">
         <div className="flex items-center justify-between">
-          <button 
-            onClick={() => navigate("/")} 
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-          >
-            <img src={logo} alt="Brototype" className="h-8 w-8" />
-            {!collapsed && (
-              <span className="text-lg font-semibold text-sidebar-foreground">
-                Brototype Connect
-              </span>
-            )}
-          </button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <button 
+                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+              >
+                <img src={logo} alt="Brototype" className="h-8 w-8" />
+                {!collapsed && (
+                  <span className="text-lg font-semibold text-sidebar-foreground">
+                    Brototype Connect
+                  </span>
+                )}
+              </button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-center text-2xl">Built for Brototype</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-6 py-4">
+                <div className="flex justify-center">
+                  <img src={logo} alt="Brototype" className="h-20 w-20" />
+                </div>
+                
+                <div className="text-center space-y-2">
+                  <Badge variant="secondary" className="text-sm">Version 2.0 - Competition Build</Badge>
+                  <p className="text-muted-foreground text-sm">
+                    A comprehensive student complaint management and community platform
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-center">Tech Stack</h4>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <Badge variant="outline">React</Badge>
+                    <Badge variant="outline">TypeScript</Badge>
+                    <Badge variant="outline">Tailwind CSS</Badge>
+                    <Badge variant="outline">Lovable Cloud</Badge>
+                    <Badge variant="outline">Shadcn/ui</Badge>
+                    <Badge variant="outline">Framer Motion</Badge>
+                  </div>
+                </div>
+
+                <div className="text-center pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    Designed & Developed with ❤️
+                  </p>
+                  <p className="text-sm font-medium mt-1">
+                    For Brototype Competition 2024
+                  </p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Button
             variant="ghost"
             size="icon"

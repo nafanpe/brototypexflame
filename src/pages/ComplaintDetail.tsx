@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { UserBadge } from '@/components/UserBadge';
+import confetti from 'canvas-confetti';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -159,6 +160,15 @@ export default function ComplaintDetail() {
 
       if (functionError) throw new Error(functionError.message);
       if (data?.error) throw new Error(data.error);
+
+      // Fire confetti if resolved
+      if (newStatus === 'resolved') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
 
       toast({
         title: 'Status Updated',
