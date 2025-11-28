@@ -38,7 +38,6 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import brototypeLogo from '@/assets/brototype-logo.png';
 import { MobileSidebar } from '@/components/MobileSidebar';
-import NewsTicker from '@/components/NewsTicker';
 
 interface Complaint {
   id: string;
@@ -351,17 +350,10 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-hidden bg-background">
-      {/* Ticker Section (Fixed Height: 32px) */}
-      <div className="flex-none w-full z-10 h-8">
-        <NewsTicker />
-      </div>
-
-      {/* Scrollable Dashboard Content (calc: 100vh - 32px) */}
-      <div className="flex-1 overflow-y-auto" style={{ height: 'calc(100vh - 2rem)' }}>
-        <main className="container mx-auto px-4 py-4 pb-6">
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto px-4 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 animate-fade-in">
           <Card className="shadow-card hover:shadow-card-hover transition-smooth hover-highlight">
             <CardHeader className="flex flex-row items-center justify-between pb-1">
               <CardTitle className="text-sm font-medium">Total Complaints</CardTitle>
@@ -398,7 +390,7 @@ export default function Dashboard() {
 
         {/* Charts Section - Only visible to Admins and Staff */}
         {(userRole === 'admin' || userRole === 'staff') && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 animate-fade-in">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 animate-fade-in">
             {/* Donut Chart - Complaints by Category */}
             <Card className="shadow-card hover:shadow-card-hover transition-smooth">
               <CardHeader className="pb-2">
@@ -494,7 +486,7 @@ export default function Dashboard() {
         )}
 
         {/* Action Bar - Search, Filters, View Toggle, and New Complaint */}
-        <div className="flex flex-col md:flex-row gap-3 mb-4 items-stretch md:items-center">
+        <div className="flex flex-col md:flex-row gap-4 mb-6 items-stretch md:items-center">
           {/* Search Input */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -705,8 +697,7 @@ export default function Dashboard() {
             ))}
           </div>
         )}
-        </main>
-      </div>
+      </main>
     </div>
   );
 }
