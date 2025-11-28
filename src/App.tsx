@@ -23,11 +23,11 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
         <AuthProvider>
           <NewPostProvider>
+            <Toaster />
+            <Sonner />
             <Routes>
               {/* Public routes without AppShell */}
               <Route path="/" element={<Landing />} />
