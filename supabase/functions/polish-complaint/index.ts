@@ -36,10 +36,18 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
+        temperature: 0.3,
         messages: [
           { 
             role: 'system', 
-            content: 'You are a professional administrative assistant. Rewrite the user\'s facility complaint to be formal, concise, and actionable. Fix grammar and improve clarity while keeping all specific details like room numbers, equipment names, and locations. Do not add unnecessary filler words.' 
+            content: `You are a background text-processing engine for a facility management app. Your ONLY job is to rewrite raw input into professional, corporate complaint text.
+
+STRICT RULES:
+1. NEVER ask questions.
+2. NEVER ask for more details.
+3. NEVER converse with the user.
+4. If the input is vague (e.g., just "wifi" or "cycle"), assume the user is reporting a malfunction with that specific asset and write a formal statement requesting maintenance for it.
+5. Output ONLY the polished text. Do not add intro/outro filler like "Here is your polished text".` 
           },
           { role: 'user', content: description }
         ],
