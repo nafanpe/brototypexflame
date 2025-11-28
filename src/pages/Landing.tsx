@@ -5,11 +5,21 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, MessageSquare, AlertCircle, CheckCircle2, Code, Users, UserCheck, Heart, Image, ArrowRight } from "lucide-react";
+import { Star, MessageSquare, AlertCircle, CheckCircle2, Code, Users, UserCheck, Heart, Image, ArrowRight, TrendingUp, Clock, Award } from "lucide-react";
 import logo from "@/assets/brototype-logo.png";
+import beforeImage from "@/assets/before-chaos.jpg";
+import afterImage from "@/assets/after-clean.jpg";
 import { CustomCursor } from "@/components/CustomCursor";
 import { BackToTopButton } from "@/components/BackToTopButton";
 import { StickyNav } from "@/components/StickyNav";
+import { CompareSlider } from "@/components/CompareSlider";
+import { Footer } from "@/components/Footer";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const FadeInSection = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
   const ref = useRef(null);
@@ -23,6 +33,64 @@ const FadeInSection = ({ children, delay = 0 }: { children: React.ReactNode; del
       transition={{ duration: 0.8, delay, ease: "easeOut" }}
     >
       {children}
+    </motion.div>
+  );
+};
+
+const AnimatedStatCard = ({ 
+  icon, 
+  value, 
+  suffix, 
+  label, 
+  delay 
+}: { 
+  icon: React.ReactNode; 
+  value: number; 
+  suffix: string; 
+  label: string; 
+  delay: number;
+}) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (isInView) {
+      let startTime: number | null = null;
+      const duration = 2000; // 2 seconds
+
+      const animate = (currentTime: number) => {
+        if (!startTime) startTime = currentTime;
+        const progress = Math.min((currentTime - startTime) / duration, 1);
+        
+        // Easing function for smooth animation
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        setCount(Math.floor(easeOutQuart * value));
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    }
+  }, [isInView, value]);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      transition={{ duration: 0.6, delay }}
+      className="text-center"
+    >
+      <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 text-primary">
+        {icon}
+      </div>
+      <div className="text-5xl md:text-6xl font-bold mb-2 gradient-text-hover">
+        {count}{suffix}
+      </div>
+      <div className="text-lg text-muted-foreground">{label}</div>
     </motion.div>
   );
 };
@@ -171,85 +239,49 @@ const Landing = () => {
         </motion.div>
       </motion.section>
 
-      {/* Section 2: Chaos to Clarity Story */}
+      {/* Animated Stats Section */}
+      <section className="min-h-[60vh] flex items-center justify-center px-6 py-20">
+        <FadeInSection>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-12">
+              <AnimatedStatCard
+                icon={<Users className="w-10 h-10" />}
+                value={500}
+                suffix="+"
+                label="Students"
+                delay={0}
+              />
+              <AnimatedStatCard
+                icon={<CheckCircle2 className="w-10 h-10" />}
+                value={1000}
+                suffix="+"
+                label="Resolved"
+                delay={0.2}
+              />
+              <AnimatedStatCard
+                icon={<Clock className="w-10 h-10" />}
+                value={24}
+                suffix="h"
+                label="Avg Time"
+                delay={0.4}
+              />
+            </div>
+          </div>
+        </FadeInSection>
+      </section>
+
+      {/* Section 2: Before/After Comparison Slider */}
       <section className="min-h-screen flex items-center justify-center px-6 py-12 relative overflow-hidden">
         <FadeInSection>
           <div className="max-w-5xl mx-auto">
-            {/* Discord Bubbles Animation */}
-            <div className="relative mb-12 h-[500px] flex items-center justify-center">
-              {/* Chaotic Discord-style bubbles */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-                className="absolute inset-0 flex items-center justify-center"
-              >
-                <div className="relative w-full h-full">
-                  {[...Array(8)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="absolute bg-gray-800 rounded-lg p-4 shadow-lg"
-                      initial={{ 
-                        x: (Math.random() - 0.5) * 600,
-                        y: (Math.random() - 0.5) * 300,
-                        opacity: 0,
-                        rotate: (Math.random() - 0.5) * 30
-                      }}
-                      whileInView={{ 
-                        x: 0,
-                        y: 0,
-                        opacity: [0, 1, 1, 0],
-                        rotate: 0,
-                        scale: [0.5, 1, 1, 0.3]
-                      }}
-                      transition={{ 
-                        duration: 2,
-                        delay: i * 0.1,
-                        ease: "easeInOut"
-                      }}
-                      viewport={{ once: true }}
-                      style={{
-                        left: '50%',
-                        top: '50%',
-                        transform: 'translate(-50%, -50%)'
-                      }}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/20" />
-                        <div className="flex-1">
-                          <div className="h-3 bg-gray-600 rounded w-20 mb-2" />
-                          <div className="h-2 bg-gray-700 rounded w-32" />
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Final Clean UI Card */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 1.8 }}
-                viewport={{ once: true }}
-                className="relative z-10"
-              >
-                <Card className="bg-card/90 backdrop-blur-sm border-border p-6 max-w-md shadow-2xl">
-                  <div className="flex items-start justify-between mb-4">
-                    <Badge variant="destructive" className="text-xs">High Priority</Badge>
-                    <Badge variant="outline" className="text-xs">In Progress</Badge>
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2 text-foreground">Wi-Fi Down in Lab 3</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Unable to connect to network. Affecting 15+ students.
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>3 updates</span>
-                  </div>
-                </Card>
-              </motion.div>
+            {/* Comparison Slider */}
+            <div className="mb-12">
+              <CompareSlider
+                beforeImage={beforeImage}
+                afterImage={afterImage}
+                beforeLabel="Chaos"
+                afterLabel="Clarity"
+              />
             </div>
 
             {/* Text Content */}
@@ -642,6 +674,43 @@ const Landing = () => {
         </FadeInSection>
       </section>
 
+      {/* FAQ Section */}
+      <section className="min-h-[60vh] flex items-center justify-center px-6 py-20">
+        <FadeInSection>
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold mb-12 text-center gradient-text-hover">
+              Frequently Asked Questions
+            </h2>
+            <Accordion type="single" collapsible className="space-y-4">
+              <AccordionItem value="item-1" className="border-border">
+                <AccordionTrigger className="text-left text-lg hover:text-primary">
+                  Is this mandatory?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Yes, Brototype Connect is the official platform for all students and staff to submit and track facility complaints. It ensures transparency and accountability in resolving campus issues.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-2" className="border-border">
+                <AccordionTrigger className="text-left text-lg hover:text-primary">
+                  Is it anonymous?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  You can choose to submit complaints anonymously. However, providing your identity helps us follow up with you directly and resolve issues more efficiently.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-3" className="border-border">
+                <AccordionTrigger className="text-left text-lg hover:text-primary">
+                  How to join?
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Simply click "Get Started" and sign up using your Brototype email address. Once verified, you'll have full access to submit complaints, track their progress, and engage with the community.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        </FadeInSection>
+      </section>
+
       {/* Section 6: Final CTA */}
       <section className="min-h-screen flex items-center justify-center px-6 py-20">
         <FadeInSection delay={0.2}>
@@ -670,8 +739,8 @@ const Landing = () => {
         </FadeInSection>
       </section>
 
-      {/* Fade to black at bottom */}
-      <div className="h-32 bg-gradient-to-b from-transparent to-black" />
+      {/* Footer */}
+      <Footer />
       
       {/* Custom Cursor */}
       <CustomCursor />
