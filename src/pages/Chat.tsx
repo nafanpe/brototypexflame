@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { ServerRail } from '@/components/chat/ServerRail';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatArea } from '@/components/chat/ChatArea';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export interface ChatServer {
   id: string;
@@ -36,6 +38,7 @@ export interface DMConversation {
 export default function Chat() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedServer, setSelectedServer] = useState<ChatServer | null>(null);
   const [selectedChannel, setSelectedChannel] = useState<ChatChannel | null>(null);
   const [selectedDM, setSelectedDM] = useState<DMConversation | null>(null);
@@ -46,6 +49,67 @@ export default function Chat() {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
+
+  // Handle invite link
+  useEffect(() => {
+    const handleInviteLink = async () => {
+      const joinServerId = searchParams.get('join');
+      if (!joinServerId || !user) return;
+
+      try {
+        // Check if server exists
+        const { data: server, error: serverError } = await supabase
+          .from('chat_servers')
+          .select('*')
+          .eq('id', joinServerId)
+          .maybeSingle();
+
+        if (serverError || !server) {
+          toast.error('Server not found');
+          setSearchParams({});
+          return;
+        }
+
+        // Check if already a member
+        const { data: existingMember } = await supabase
+          .from('server_members')
+          .select('*')
+          .eq('server_id', joinServerId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (existingMember) {
+          toast.info('You are already a member of this server');
+          setSelectedServer(server as ChatServer);
+          setSearchParams({});
+          return;
+        }
+
+        // Join the server
+        const { error: joinError } = await supabase
+          .from('server_members')
+          .insert({
+            server_id: joinServerId,
+            user_id: user.id
+          });
+
+        if (joinError) {
+          toast.error('Failed to join server');
+          console.error('Join error:', joinError);
+        } else {
+          toast.success(`Joined ${server.name}!`);
+          setSelectedServer(server as ChatServer);
+        }
+      } catch (error) {
+        console.error('Error handling invite:', error);
+        toast.error('Failed to process invite link');
+      } finally {
+        setSearchParams({});
+      }
+    };
+
+    handleInviteLink();
+  }, [searchParams, user, setSearchParams]);
 
   const handleSelectServer = (server: ChatServer) => {
     setSelectedServer(server);
