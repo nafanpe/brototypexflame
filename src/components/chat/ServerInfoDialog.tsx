@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Users, Calendar, User, Edit2, Check, X, Upload, Trash2 } from 'lucide-react';
+import { Users, Calendar, User, Edit2, Check, X, Upload, Trash2, Share2 } from 'lucide-react';
 import { ChatServer } from '@/pages/Chat';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -326,8 +326,30 @@ export function ServerInfoDialog({ open, onOpenChange, server, onServerUpdated, 
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+          </ScrollArea>
           </div>
+
+          {/* Share Link Section - Only visible to owner */}
+          {isOwner && (
+            <div className="pt-4 border-t border-border/50">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const inviteUrl = `${window.location.origin}/chat?join=${server.id}`;
+                  navigator.clipboard.writeText(inviteUrl);
+                  toast.success('Invite link copied to clipboard!');
+                }}
+                className="w-full"
+              >
+                <Share2 className="h-4 w-4 mr-2" />
+                Copy Invite Link
+              </Button>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Share this link with others to invite them to your server
+              </p>
+            </div>
+          )}
 
           {/* Delete Server Section - Only visible to owner */}
           {isOwner && (
