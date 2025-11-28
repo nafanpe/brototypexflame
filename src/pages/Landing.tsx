@@ -269,27 +269,6 @@ const Landing = () => {
       {/* Section 3: Horizontal Feature Tour */}
       <section ref={horizontalRef} className="relative" style={{ height: "500vh" }}>
         <div className="sticky top-0 h-screen flex items-center overflow-hidden">
-          {/* Scroll Progress Indicators */}
-          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-3 z-10">
-            {[0, 1, 2, 3].map((index) => (
-              <motion.div
-                key={index}
-                className="w-2 h-2 rounded-full bg-white/30"
-                style={{
-                  backgroundColor: useTransform(
-                    scrollYProgress,
-                    [index * 0.25, (index + 1) * 0.25],
-                    ["rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 1)"]
-                  ),
-                  scale: useTransform(
-                    scrollYProgress,
-                    [index * 0.25, (index + 0.5) * 0.25, (index + 1) * 0.25],
-                    [1, 1.5, 1]
-                  ),
-                }}
-              />
-            ))}
-          </div>
           <motion.div 
             className="flex gap-32 px-16"
             style={{ x: horizontalX }}
