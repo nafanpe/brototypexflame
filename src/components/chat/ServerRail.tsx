@@ -73,7 +73,7 @@ export function ServerRail({ selectedServer, onSelectServer, onDMMode, isDMMode 
         fetchUserServers();
       })
       .on('postgres_changes', { 
-        event: 'UPDATE', 
+        event: '*', 
         schema: 'public', 
         table: 'chat_servers' 
       }, () => {
