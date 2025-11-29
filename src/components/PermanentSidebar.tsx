@@ -97,7 +97,7 @@ export function PermanentSidebar() {
                 </div>
                 
                 <div className="text-center space-y-2">
-                  <Badge variant="secondary" className="text-sm">Version 2.0 - Competition Build</Badge>
+                  <Badge variant="secondary" className="text-sm">Creator - Nafan P E</Badge>
                   <p className="text-muted-foreground text-sm">
                     A comprehensive student complaint management and community platform
                   </p>
